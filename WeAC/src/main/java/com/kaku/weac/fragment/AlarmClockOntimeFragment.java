@@ -20,6 +20,8 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -34,8 +36,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v7.app.NotificationCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,6 +85,8 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
      * Log tag ：AlarmClockOntimeFragment
      */
     private static final String LOG_TAG = "AlarmClockOntimeFragment";
+
+    public static final String NOTIFICATION_CHANNEL = "myChannel";
 
     /**
      * 当前时间
@@ -594,8 +598,17 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
         CharSequence time = new SimpleDateFormat("HH:mm", Locale.getDefault())
                 .format(nextTime);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            //解决Fail to post notification on channel "null"
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL, getString(R.string.app_name), NotificationManager.IMPORTANCE_MIN);
+//            channel.enableVibration(false);//去除振动
+
+            NotificationManager manager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            if (manager != null) manager.createNotificationChannel(channel);
+//            builder.setCategory(Notification.CATEGORY_MESSAGE);
+        }
         // 通知
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getActivity());
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getActivity(), NOTIFICATION_CHANNEL);
         // 设置PendingIntent
         Notification notification = builder.setContentIntent(napCancel)
                 // 当清除下拉列表触发

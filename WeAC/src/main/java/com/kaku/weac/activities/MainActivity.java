@@ -39,9 +39,6 @@ import com.kaku.weac.service.DaemonService;
 import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.ToastUtil;
-import com.umeng.analytics.MobclickAgent;
-import com.umeng.fb.FeedbackAgent;
-import com.umeng.update.UmengUpdateAgent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,16 +139,6 @@ public class MainActivity extends BaseActivity implements OnClickListener {
      * 配置友盟设置
      */
     private void configureUmeng() {
-        // 使用友盟集成测试模式
-        MobclickAgent.setDebugMode(true);
-        // 因为以下这些设置是静态的参数，如果在应用中不止一次调用了检测更新的方法，而每次的设置都不一样，
-        // 请在每次检测更新的函数之前先恢复默认设置再设置参数，避免在其他地方设置的参数影响到这次更新。
-        UmengUpdateAgent.setDefault();
-        UmengUpdateAgent.setUpdateOnlyWifi(false);
-        UmengUpdateAgent.update(this);
-
-        // 当开发者回复用户反馈后，提醒用户
-        new FeedbackAgent(this).sync();
     }
 
     /**
@@ -408,7 +395,6 @@ public class MainActivity extends BaseActivity implements OnClickListener {
                 ToastUtil.showShortToast(this, getString(R.string.press_again_exit));
                 mExitTime = System.currentTimeMillis();
             } else {
-                MobclickAgent.onKillProcess(this);
                 finish();
                 System.exit(0);
             }

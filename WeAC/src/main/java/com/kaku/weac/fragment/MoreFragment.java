@@ -59,13 +59,6 @@ import com.kaku.weac.util.ToastUtil;
 import com.kaku.weac.view.CircleProgress;
 import com.kaku.weac.zxing.activity.CaptureActivity;
 import com.squareup.otto.Subscribe;
-import com.umeng.analytics.MobclickAgent;
-import com.umeng.fb.FeedbackAgent;
-import com.umeng.fb.fragment.FeedbackFragment;
-import com.umeng.update.UmengUpdateAgent;
-import com.umeng.update.UmengUpdateListener;
-import com.umeng.update.UpdateResponse;
-import com.umeng.update.UpdateStatus;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -350,37 +343,6 @@ public class MoreFragment extends LazyLoadFragment {
     }
 
     private void operateUpdate() {
-        // UmengUpdateAgent.forceUpdate(getActivity());
-        // 关闭友盟自动弹出提示
-        UmengUpdateAgent.setUpdateAutoPopup(false);
-        // FIXME：提示没有wifi是否更新
-        UmengUpdateAgent.setUpdateOnlyWifi(false);
-        UmengUpdateAgent.setUpdateListener(new UmengUpdateListener() {
-            @Override
-            public void onUpdateReturned(int updateStatus, UpdateResponse updateInfo) {
-                try {
-                    closeProgressDialog();
-                    switch (updateStatus) {
-                        case UpdateStatus.Yes: // has update
-                            UmengUpdateAgent.showUpdateDialog(getActivity(), updateInfo);
-                            break;
-                        case UpdateStatus.No: // has no update
-                            ToastUtil.showShortToast(getActivity(), getString(R.string.latest_version));
-                            break;
-    /*                    case UpdateStatus.NoneWifi: // none wifi
-                            ToastUtil.showShortToast(getActivity(), "没有wifi连接， 只在wifi下更新");
-                            break;*/
-                        case UpdateStatus.Timeout: // time out
-                            ToastUtil.showShortToast(getActivity(), getString(R.string.connection_time_out));
-                            break;
-                    }
-                } catch (Exception e) {
-                    LogUtil.e(LOG_TAG, "onUpdateReturned: " + e.toString());
-                }
-            }
-        });
-        UmengUpdateAgent.update(getActivity());
-
         showProgressDialog(getString(R.string.catching_version));
     }
 
@@ -416,16 +378,7 @@ public class MoreFragment extends LazyLoadFragment {
     }
 
     private void operateFeedback() {
-        FeedbackAgent mFeedbackAgent = new FeedbackAgent(getActivity());
-        // 关闭反馈推送
-        mFeedbackAgent.closeFeedbackPush();
-        // 关闭语音反馈
-        mFeedbackAgent.closeAudioFeedback();
-        mFeedbackAgent.setWelcomeInfo(getString(R.string.welcome_suggestion));
-        Intent intentFeedback = new Intent(getActivity(), FeedbackActivity.class);
-        intentFeedback.putExtra(FeedbackFragment.BUNDLE_KEY_CONVERSATION_ID,
-                mFeedbackAgent.getDefaultConversation().getId());
-        startActivity(intentFeedback);
+
     }
 
     @Subscribe
@@ -533,7 +486,6 @@ public class MoreFragment extends LazyLoadFragment {
                                 if (aPkgList.equals("com.kaku.weac")) {
                                     // 如果开发者调用Process.kill或者System.exit之类的方法杀死进程，
                                     // 请务必在此之前调用MobclickAgent.onKillProcess(Context context)方法，用来保存统计数据。
-                                    MobclickAgent.onKillProcess(getActivity());
                                 }
                                 mActivityManager.killBackgroundProcesses(aPkgList);
 

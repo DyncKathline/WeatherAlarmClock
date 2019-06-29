@@ -21,7 +21,6 @@ import android.os.Bundle;
 import com.kaku.weac.LeakCanaryApplication;
 import com.kaku.weac.util.LogUtil;
 import com.squareup.leakcanary.RefWatcher;
-import com.umeng.analytics.MobclickAgent;
 
 import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
@@ -55,13 +54,10 @@ public class BaseActivity extends SwipeBackActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // 友盟session的统计
-        MobclickAgent.onResume(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        MobclickAgent.onPause(this);
     }
 }

@@ -23,7 +23,6 @@ import android.widget.ImageView;
 
 import com.kaku.weac.R;
 import com.kaku.weac.util.MyUtil;
-import com.umeng.fb.fragment.FeedbackFragment;
 
 /**
  * 意见反馈Activity
@@ -38,13 +37,6 @@ public class FeedbackActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feed_back);
         assignViews();
-
-        String conversationId = getIntent().getStringExtra(FeedbackFragment.BUNDLE_KEY_CONVERSATION_ID);
-        FeedbackFragment feedbackFragment = FeedbackFragment.newInstance(conversationId);
-
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.container, feedbackFragment)
-                .commit();
 
     }
 
