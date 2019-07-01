@@ -137,8 +137,8 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
         Notification.Builder builder = new Notification.Builder(context);
 
         String CHANNEL_ID = "my_channel_01";
-        CharSequence name = "my_channel";
-        String Description = "This is my channel";
+        CharSequence name = context.getString(R.string.app_name);
+        String Description = "闹钟响了";
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
