@@ -20,9 +20,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.kaku.weac.service.HeartBeatService;
 import com.kaku.weac.util.LogUtil;
+import com.qmai.crashlib.CrashHandler;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
+import com.sunfusheng.daemon.DaemonHolder;
 
 import org.litepal.LitePalApplication;
 
@@ -46,6 +49,8 @@ public class LeakCanaryApplication extends LitePalApplication {
         super.onCreate();
         initLeakCanary();
         initActivityLifecycleLogs();
+        CrashHandler.getInstance().init(getApplicationContext()).setEnable(BuildConfig.DEBUG);
+        DaemonHolder.init(this, HeartBeatService.class);
     }
 
     private void initLeakCanary() {

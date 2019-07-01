@@ -4,9 +4,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!--锁屏权限-->
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <!-- 以下为百度定位需要权限 -->
     <!-- 这个权限用于进行网络定位 -->
@@ -41,6 +44,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name">
+        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
         <activity
             android:name=".activities.SplashActivity"
             android:excludeFromRecents="false"
@@ -185,13 +189,7 @@
             </intent-filter>
         </receiver>
 
-        <!--        <service
-                    android:name=".service.NotificationCenter"
-                    android:exported="false"
-                    android:process=":pushservice">
-                </service>-->
-
-
+        <service android:name=".service.HeartBeatService" />
         <receiver
             android:name=".broadcast.WakeReceiver"
             android:enabled="true"
@@ -200,12 +198,6 @@
                 <action android:name="com.kaku.weac.wake.gray"/>
             </intent-filter>
         </receiver>
-
-        <service
-            android:name=".service.DaemonService$DaemonInnerService"
-            android:enabled="true"
-            android:exported="false"
-            android:process=":daemon"/>
         <service
             android:name=".broadcast.WakeReceiver$WakeNotifyService"
             android:enabled="true"
@@ -218,11 +210,6 @@
 
 
         <service
-            android:name=".service.DaemonService"
-            android:exported="true"
-            android:process=":daemon">
-        </service>
-        <service
             android:name=".service.CountDownService">
         </service>
         <service
@@ -234,9 +221,6 @@
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="ObExIXC7RqG2ZXf0Ys2q0ttv"/>
-        <meta-data
-            android:name="com.kaku.weac.util.GlideConfiguration"
-            android:value="GlideModule"/>
 
     </application>
 

@@ -20,7 +20,7 @@ import android.os.Bundle;
 
 import com.kaku.weac.LeakCanaryApplication;
 import com.kaku.weac.util.LogUtil;
-import com.squareup.leakcanary.RefWatcher;
+//import com.squareup.leakcanary.RefWatcher;
 
 import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
@@ -47,8 +47,8 @@ public class BaseActivity extends SwipeBackActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        RefWatcher refWatcher = LeakCanaryApplication.getRefWatcher(this);
-        refWatcher.watch(this);
+//        RefWatcher refWatcher = LeakCanaryApplication.getRefWatcher(this);
+//        refWatcher.watch(this);
     }
 
     @Override

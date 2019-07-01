@@ -1,3 +1,3 @@
-include ':PagerSlidingTabStrip', ':daemon', ':SwipeBackLayout', ':litepal'
+include ':PagerSlidingTabStrip', ':SwipeBackLayout', ':litepal', ':keepalive'
 include ':WeAC'
 include ':PullToRefresh'

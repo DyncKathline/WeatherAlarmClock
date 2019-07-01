@@ -16,7 +16,6 @@
  */
 package com.kaku.weac.activities;
 
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -35,7 +34,6 @@ import com.kaku.weac.fragment.AlarmClockFragment;
 import com.kaku.weac.fragment.MoreFragment;
 import com.kaku.weac.fragment.TimeFragment;
 import com.kaku.weac.fragment.WeaFragment;
-import com.kaku.weac.service.DaemonService;
 import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.ToastUtil;
@@ -119,7 +117,6 @@ public class MainActivity extends BaseActivity implements OnClickListener {
         configureUmeng();
         // 禁止滑动后退
         setSwipeBackEnable(false);
-        startService(new Intent(this, DaemonService.class));
         setContentView(R.layout.activity_main);
         // 设置主题壁纸
         setThemeWallpaper();

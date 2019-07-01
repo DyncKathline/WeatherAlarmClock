@@ -20,8 +20,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.kaku.weac.service.DaemonService;
+import com.kaku.weac.service.HeartBeatService;
 import com.kaku.weac.util.LogUtil;
+import com.sunfusheng.daemon.DaemonHolder;
 
 /**
  * 接收手机启动广播
@@ -39,8 +40,7 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         LogUtil.d(LOG_TAG, "onReceive ");
-        context.startService(new Intent(context, DaemonService.class));
-
+        DaemonHolder.init(context, HeartBeatService.class);
     }
 
 }

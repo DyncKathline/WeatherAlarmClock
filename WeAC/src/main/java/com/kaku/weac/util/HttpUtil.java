@@ -17,12 +17,13 @@
 package com.kaku.weac.util;
 
 import com.kaku.weac.Listener.HttpCallbackListener;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
 import java.net.URLEncoder;
 import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * http工具类
@@ -45,7 +46,6 @@ public class HttpUtil {
         new Thread(new Runnable() {
             @Override
             public void run() {
-//                HttpURLConnection connection = null;
                 try {
                     String address1;
                     if (address == null) {
@@ -55,71 +55,15 @@ public class HttpUtil {
                         address1 = address;
                     }
                     if (sOkHttpClient == null) {
-                        sOkHttpClient = new OkHttpClient();
+                        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+                        builder.readTimeout(6000, TimeUnit.MILLISECONDS);//读取超时
+                        builder.connectTimeout(6000, TimeUnit.MILLISECONDS);//连接超时
+                        builder.writeTimeout(6000, TimeUnit.MILLISECONDS);//写入超时
+                        sOkHttpClient = builder.build();
                     }
-                    sOkHttpClient.setReadTimeout(6000, TimeUnit.MILLISECONDS);
-                    sOkHttpClient.setConnectTimeout(6000, TimeUnit.MILLISECONDS);
-                    sOkHttpClient.setWriteTimeout(6000, TimeUnit.MILLISECONDS);
                     Request request = new Request.Builder().url(address1).build();
                     Response response = sOkHttpClient.newCall(request).execute();
                     String result = response.body().string();
-                    // 访问：【http://www.weather.com.cn/data/list3/cityXXX.xml】的时候，
-                    // 如果城市代码错误会继续访问一些无关的东西
-//                    if (result.contains("无法访问")) {
-//                        listener.onError(new Exception());
-//                        return;
-//                    }
-
-
-
-/*                    URL url = new URL(address1);
-                    connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("GET");
-                    connection.setConnectTimeout(8000);
-                    connection.setReadTimeout(8000);
-                    InputStream in = connection.getInputStream();*/
-
-
-/*                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = in.read(buffer)) > -1) {
-                        baos.write(buffer, 0, len);
-                    }
-                    baos.flush();
-
-                    InputStream stream1 = new ByteArrayInputStream(baos.toByteArray());
-                    InputStream stream2 = new ByteArrayInputStream(baos.toByteArray());*/
-
-
-                    // 天气信息
-//                    WeatherInfo weatherInfo = handleWeatherResponse(in);
-
-/*                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (line.contains("无法访问")) {
-                            listener.onError(new Exception());
-                            return;
-                        }
-                        response.append(line);
-                    }*/
-
-/*
-                    File file = new File(Environment.getExternalStorageDirectory()
-                            .getAbsolutePath() + "/WeaAlarmClock/test/" +
-                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                            .format(new Date())
-                            + ".txt");
-                    if (!file.exists()){
-                        file.createNewFile();
-                    }
-                    FileWriter fw = new FileWriter(file);
-                    fw.write(response.toString());
-                    fw.flush();
-                    fw.close();*/
-
 
                     if (listener != null) {
                         // 加载完成返回

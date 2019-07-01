@@ -16,11 +16,22 @@
  */
 package com.kaku.weac.broadcast;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.SystemClock;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.util.Log;
 
+import com.kaku.weac.R;
 import com.kaku.weac.activities.AlarmClockOntimeActivity;
 import com.kaku.weac.bean.AlarmClock;
 import com.kaku.weac.common.WeacConstants;
@@ -86,6 +97,14 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
             WeacStatus.sLastStartTime = now;
         }
 
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            intentNotification(context, alarmClock, napTimesRan);
+        }else {
+            intentActivity(context, alarmClock, napTimesRan);
+        }
+    }
+
+    private void intentActivity(Context context, AlarmClock alarmClock, int napTimesRan) {
         Intent it = new Intent(context, AlarmClockOntimeActivity.class);
 
         // 新闹钟任务
@@ -104,5 +123,47 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
         it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         context.startActivity(it);
+    }
+
+    private void intentNotification(Context context, AlarmClock alarmClock, int napTimesRan) {
+        Log.e(LOG_TAG, "intentNotification");
+        Intent fullScreenIntent = new Intent(context, AlarmClockOntimeActivity.class);
+        PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(context, 0,
+                fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        int NOTIFICATION_ID = 234;
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification.Builder builder = new Notification.Builder(context);
+
+        String CHANNEL_ID = "my_channel_01";
+        CharSequence name = "my_channel";
+        String Description = "This is my channel";
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+            mChannel.setDescription(Description);
+            mChannel.enableLights(true);
+            mChannel.enableVibration(true);
+            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            mChannel.setShowBadge(false);
+            notificationManager.createNotificationChannel(mChannel);
+            builder.setChannelId(CHANNEL_ID);
+        }
+
+        builder.setSmallIcon(R.drawable.ic_nap_notification)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nap_notification))
+                .setContentTitle(name)
+                .setContentText(Description)
+                .setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_SOUND)//DEFAULT_ALL
+                .setTicker("悬浮通知")
+                .setFullScreenIntent(fullScreenPendingIntent, true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            notificationManager.notify(NOTIFICATION_ID, builder.build());
+        }else {
+            notificationManager.notify(NOTIFICATION_ID, builder.getNotification());
+        }
     }
 }

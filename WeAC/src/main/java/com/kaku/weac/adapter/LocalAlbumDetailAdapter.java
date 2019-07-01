@@ -25,6 +25,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.kaku.weac.R;
 import com.kaku.weac.bean.ImageItem;
 
@@ -61,8 +64,12 @@ public class LocalAlbumDetailAdapter extends ArrayAdapter<ImageItem> {
         if (null != imageItem) {
             String imagePath = imageItem.getImagePath();
             if (!TextUtils.isEmpty(imagePath)) {
-                Glide.with(mContext).load("file://" + imagePath).
-                        placeholder(R.color.default_image_background).into(viewHolder.mPictureIv);
+                RequestOptions mRequestOptions = new RequestOptions()
+                        .centerCrop()
+                        .placeholder(R.color.default_image_background)
+                        .priority(Priority.HIGH)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL);
+                Glide.with(mContext).load("file://" + imagePath).apply(mRequestOptions).into(viewHolder.mPictureIv);
             }
         }
         return convertView;

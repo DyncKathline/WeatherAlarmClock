@@ -47,6 +47,11 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
     android.applicationVariants.all { variant ->
         variant.outputs.all {
             outputFileName = "Alarm.${defaultConfig.versionName}.apk"
@@ -91,32 +96,33 @@ repositories {
 }
 
 dependencies {
-    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.3'
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.3'
-    compile project(':PagerSlidingTabStrip')
-    compile project(':PullToRefresh')
-    compile files('libs/locSDK_6.13.jar')
-    compile project(':daemon')
-    compile 'com.android.support:support-v4:28.0.0'
-    compile 'com.squareup.okhttp:okhttp:2.6.0'
-    compile 'com.squareup.okio:okio:1.6.0'
-    compile 'com.android.support:appcompat-v7:28.0.0'
-    compile 'com.squareup:otto:1.3.8'
-    compile 'com.github.bumptech.glide:glide:3.6.1'
-    compile files('libs/zxing-4.7.3.jar')
-    compile 'com.github.castorflex.smoothprogressbar:library-circular:1.2.0'
-    compile 'com.android.support:design:28.0.0'
-    compile 'me.itangqi.waveloadingview:library:0.2.0'
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.4@aar') {
+    debugApi 'com.squareup.leakcanary:leakcanary-android:1.6.3'
+    releaseApi 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
+    implementation project(':PagerSlidingTabStrip')
+    implementation project(':PullToRefresh')
+    implementation files('libs/locSDK_6.13.jar')
+//    implementation project(':daemon')
+    implementation project(':keepalive')
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.squareup:otto:1.3.8'
+    implementation 'com.github.bumptech.glide:glide:4.8.0'
+    implementation files('libs/zxing-4.7.3.jar')
+    implementation 'com.github.castorflex.smoothprogressbar:library-circular:1.2.0'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'me.itangqi.waveloadingview:library:0.2.0'
+    implementation('com.github.afollestad.material-dialogs:core:0.8.5.4@aar') {
         transitive = true
     }
-    compile('com.github.afollestad.material-dialogs:commons:0.8.5.4@aar') {
+    implementation('com.github.afollestad.material-dialogs:commons:0.8.5.4@aar') {
         transitive = true
     }
-    compile project(':SwipeBackLayout')
-    compile 'jp.wasabeef:recyclerview-animators:2.2.0'
-    compile 'com.balysv:material-ripple:1.0.2'
-    compile 'com.makeramen:roundedimageview:2.2.1'
-    compile 'me.everything:overscroll-decor-android:1.0.1'
-    compile project(':litepal')
+    implementation project(':SwipeBackLayout')
+    implementation 'jp.wasabeef:recyclerview-animators:2.2.0'
+    implementation 'com.balysv:material-ripple:1.0.2'
+    implementation 'com.makeramen:roundedimageview:2.2.1'
+    implementation 'me.everything:overscroll-decor-android:1.0.1'
+    implementation project(':litepal')
+    implementation 'org.dync.kathline:crashlib:1.0.0'
 }
