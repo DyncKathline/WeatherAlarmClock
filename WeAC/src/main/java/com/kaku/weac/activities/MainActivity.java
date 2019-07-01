@@ -16,6 +16,7 @@
  */
 package com.kaku.weac.activities;
 
+import android.Manifest;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -37,6 +38,8 @@ import com.kaku.weac.fragment.WeaFragment;
 import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.ToastUtil;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,8 +116,6 @@ public class MainActivity extends BaseActivity implements OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 配置友盟相关
-        configureUmeng();
         // 禁止滑动后退
         setSwipeBackEnable(false);
         setContentView(R.layout.activity_main);
@@ -130,12 +131,23 @@ public class MainActivity extends BaseActivity implements OnClickListener {
         initViews();
         // 启动程序后选中Tab为闹钟
         setTabSelection(0);
-    }
 
-    /**
-     * 配置友盟设置
-     */
-    private void configureUmeng() {
+        AndPermission.with(mActivity)
+                .runtime()
+                .permission(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                .onDenied(new Action<List<String>>() {
+                    @Override
+                    public void onAction(List<String> data) {
+                        // Storage permission are not allowed.
+                    }
+                })
+                .onGranted(new Action<List<String>>() {
+                    @Override
+                    public void onAction(List<String> data) {
+                        // Storage permission are allowed.
+                    }
+                }).start();
     }
 
     /**
@@ -146,7 +158,6 @@ public class MainActivity extends BaseActivity implements OnClickListener {
         MyUtil.setBackground(vg, this);
     }
 
-    // XXX
     // @Override
     // public void onBackPressed() {
     // // super.onBackPressed();

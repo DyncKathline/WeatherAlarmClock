@@ -16,6 +16,7 @@
  */
 package com.kaku.weac.fragment;
 
+import android.Manifest;
 import android.animation.IntEvaluator;
 import android.animation.ValueAnimator;
 import android.app.ActivityManager;
@@ -59,6 +60,8 @@ import com.kaku.weac.util.ToastUtil;
 import com.kaku.weac.view.CircleProgress;
 import com.kaku.weac.zxing.activity.CaptureActivity;
 import com.squareup.otto.Subscribe;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -167,10 +170,25 @@ public class MoreFragment extends LazyLoadFragment {
         view.findViewById(R.id.scan_scan).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MyUtil.isFastDoubleClick()) {
-                    return;
-                }
-                MyUtil.startActivity(getActivity(), CaptureActivity.class);
+                AndPermission.with(getActivity())
+                        .runtime()
+                        .permission(Manifest.permission.CAMERA)
+                        .onDenied(new Action<List<String>>() {
+                            @Override
+                            public void onAction(List<String> data) {
+                                // Storage permission are not allowed.
+                            }
+                        })
+                        .onGranted(new Action<List<String>>() {
+                            @Override
+                            public void onAction(List<String> data) {
+                                // Storage permission are allowed.
+                                if (MyUtil.isFastDoubleClick()) {
+                                    return;
+                                }
+                                MyUtil.startActivity(getActivity(), CaptureActivity.class);
+                            }
+                        }).start();
             }
         });
 
@@ -178,10 +196,25 @@ public class MoreFragment extends LazyLoadFragment {
         view.findViewById(R.id.generate_code).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MyUtil.isFastDoubleClick()) {
-                    return;
-                }
-                MyUtil.startActivity(getActivity(), GenerateCodeActivity.class);
+                AndPermission.with(getActivity())
+                        .runtime()
+                        .permission(Manifest.permission.CAMERA)
+                        .onDenied(new Action<List<String>>() {
+                            @Override
+                            public void onAction(List<String> data) {
+                                // Storage permission are not allowed.
+                            }
+                        })
+                        .onGranted(new Action<List<String>>() {
+                            @Override
+                            public void onAction(List<String> data) {
+                                // Storage permission are allowed.
+                                if (MyUtil.isFastDoubleClick()) {
+                                    return;
+                                }
+                                MyUtil.startActivity(getActivity(), GenerateCodeActivity.class);
+                            }
+                        }).start();
             }
         });
 
@@ -343,9 +376,8 @@ public class MoreFragment extends LazyLoadFragment {
     }
 
     private void operateUpdate() {
-        showProgressDialog(getString(R.string.catching_version));
+//        showProgressDialog(getString(R.string.catching_version));
     }
-
 
     /**
      * 进度对话框
@@ -378,7 +410,8 @@ public class MoreFragment extends LazyLoadFragment {
     }
 
     private void operateFeedback() {
-
+        Intent intentFeedback = new Intent(getActivity(), FeedbackActivity.class);
+        startActivity(intentFeedback);
     }
 
     @Subscribe

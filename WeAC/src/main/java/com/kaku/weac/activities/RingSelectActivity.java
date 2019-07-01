@@ -16,9 +16,15 @@
  */
 package com.kaku.weac.activities;
 
+import android.Manifest;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import com.kaku.weac.fragment.RingSelectFragment;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
+
+import java.util.List;
 
 /**
  * 铃声选择activity
@@ -33,4 +39,23 @@ public class RingSelectActivity extends SingleFragmentActivity {
         return new RingSelectFragment();
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        AndPermission.with(mActivity)
+                .runtime()
+                .permission(Manifest.permission.RECORD_AUDIO)
+                .onDenied(new Action<List<String>>() {
+                    @Override
+                    public void onAction(List<String> data) {
+                        // Storage permission are not allowed.
+                    }
+                })
+                .onGranted(new Action<List<String>>() {
+                    @Override
+                    public void onAction(List<String> data) {
+                        // Storage permission are allowed.
+                    }
+                }).start();
+    }
 }

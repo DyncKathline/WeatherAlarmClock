@@ -16,6 +16,7 @@
  */
 package com.kaku.weac.fragment;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -50,8 +51,11 @@ import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.OttoAppConfig;
 import com.kaku.weac.view.MyTimer;
 import com.squareup.otto.Subscribe;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
 
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * 计时fragment
@@ -191,6 +195,23 @@ public class TimeFragment extends LazyLoadFragment implements View.OnClickListen
         // 加载中进度框
         ViewGroup progressBar = (ViewGroup) view.findViewById(R.id.progress_bar_llyt);
         progressBar.setVisibility(View.GONE);
+
+        AndPermission.with(getActivity())
+                .runtime()
+                .permission(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
+                .onDenied(new Action<List<String>>() {
+                    @Override
+                    public void onAction(List<String> data) {
+                        // Storage permission are not allowed.
+                    }
+                })
+                .onGranted(new Action<List<String>>() {
+                    @Override
+                    public void onAction(List<String> data) {
+                        // Storage permission are allowed.
+                    }
+                }).start();
     }
 
     private void setTimer() {

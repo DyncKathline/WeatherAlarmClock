@@ -16,6 +16,7 @@
  */
 package com.kaku.weac.activities;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import com.kaku.weac.LeakCanaryApplication;
@@ -36,10 +37,14 @@ public class BaseActivity extends SwipeBackActivity {
      * Log tag ：BaseActivity
      */
     private static final String LOG_TAG = "BaseActivity";
+    public Context mContext;
+    public BaseActivity mActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = this;
+        mActivity = this;
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
         LogUtil.i(LOG_TAG, getClass().getSimpleName());
     }

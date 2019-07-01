@@ -125,4 +125,5 @@ dependencies {
     implementation 'me.everything:overscroll-decor-android:1.0.1'
     implementation project(':litepal')
     implementation 'org.dync.kathline:crashlib:1.0.0'
+    implementation 'com.yanzhenjie.permission:support:2.0.1'
 }
