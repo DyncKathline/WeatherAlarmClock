@@ -22,11 +22,11 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.kaku.weac.R;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 
 /**
@@ -111,7 +111,7 @@ public class SplashActivity extends BaseActivity {
             TextView SloganTv = (TextView) findViewById(R.id.weac_slogan_tv);
             SloganTv.setTypeface(fontFace);
         } catch (Exception e) {
-            LogUtil.e(LOG_TAG, "Typeface.createFromAsset: " + e.toString());
+            Log.e(LOG_TAG, "Typeface.createFromAsset: " + e.toString());
         }
     }
 

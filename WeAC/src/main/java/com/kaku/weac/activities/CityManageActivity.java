@@ -19,7 +19,9 @@ package com.kaku.weac.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -36,11 +38,18 @@ import com.kaku.weac.bean.WeatherDaysForecast;
 import com.kaku.weac.bean.WeatherInfo;
 import com.kaku.weac.common.WeacConstants;
 import com.kaku.weac.db.WeatherDBOperate;
+import com.kaku.weac.fragment.AlarmClockOntimeFragment;
+import com.kaku.weac.nohttp.CallServer;
+import com.kaku.weac.nohttp.ConstantRequest;
+import com.kaku.weac.nohttp.StringResponseListener;
 import com.kaku.weac.util.HttpUtil;
 import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.ToastUtil;
 import com.kaku.weac.util.WeatherUtil;
+import com.yanzhenjie.nohttp.RequestMethod;
+import com.yanzhenjie.nohttp.rest.Response;
+import com.yanzhenjie.nohttp.rest.StringRequest;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -354,7 +363,68 @@ public class CityManageActivity extends BaseActivity implements View.OnClickList
      * @param cityName 刷新城市名
      */
     private void queryFormServer(final String address, final int position, final String cityName) {
+        String url = ConstantRequest.getWeatherByCity + "?city=" + Uri.encode(cityName, "UTF-8");
+        final StringRequest request = new StringRequest(url, RequestMethod.GET);
+        CallServer.getInstance().request(request, new StringResponseListener(mActivity) {
+            @Override
+            public void onSucceed(int what, Response<String> response) {
+                super.onSucceed(what, response);
+                String result = response.get();
+                LogUtil.i( "onSucceed: " + result);
+                try {
+                    if (!result.contains("error")) {
+                        WeatherInfo weatherInfo = WeatherUtil.handleWeatherResponse(
+                                new ByteArrayInputStream(result.getBytes()));
+                        // 保存天气信息
+                        WeatherUtil.saveWeatherInfo(weatherInfo, CityManageActivity.this);
+                        runOnUiThread(new SetCityInfoRunnable(weatherInfo, position));
+                    } else {
+                        switch (position) {
+                            case -1:
+                                runOnUi(getString(R.string.no_data), position);
+//                                        runOnUi(getString(R.string.no_city_info), position);
+                                break;
+                            case -2:
+                                runOnUi(getString(R.string.can_not_find_current_location), position);
+                                break;
+                            default:
+                                runOnUi(getString(R.string.no_data), -1);
+                                break;
+                        }
+                    }
 
+                } catch (Exception e) {
+//                            runOnUi(getString(R.string.unknown_error), position);
+                    Log.e(LOG_TAG, "onFinish: " + e.toString());
+                }
+            }
+
+            @Override
+            public void onFailed(int what, Response<String> response) {
+                super.onFailed(what, response);
+                try {
+                    Log.e(LOG_TAG, "onError(Exception e): " + response.getException());
+                    // 添加城市
+                    if (position == -1) {
+                        runOnUi(getString(R.string.add_city_fail), position);
+                        // 添加定位
+                    } else if (position == -2) {
+                        runOnUi(getString(R.string.add_location_fail), position);
+                    } else {
+                        if (address != null) {
+                            runOnUi(String.format(getString(R.string.refresh_fail), cityName), position);
+                            // 自动定位
+                        } else {
+                            runOnUi(String.format(getString(R.string.refresh_fail), getString(
+                                    R.string.auto_location)), position);
+                        }
+                    }
+                } catch (Exception e1) {
+//                            runOnUi(getString(R.string.unknown_error), position);
+                    Log.e(LOG_TAG, "(Exception e1): " + e1.toString());
+                }
+            }
+        });
         HttpUtil.sendHttpRequest(address, cityName, new HttpCallbackListener() {
                     @Override
                     public void onFinish(String response) {
@@ -382,14 +452,14 @@ public class CityManageActivity extends BaseActivity implements View.OnClickList
 
                         } catch (Exception e) {
 //                            runOnUi(getString(R.string.unknown_error), position);
-                            LogUtil.e(LOG_TAG, "onFinish: " + e.toString());
+                            Log.e(LOG_TAG, "onFinish: " + e.toString());
                         }
                     }
 
                     @Override
                     public void onError(Exception e) {
                         try {
-                            LogUtil.e(LOG_TAG, "onError(Exception e): " + e.toString());
+                            Log.e(LOG_TAG, "onError(Exception e): " + e.toString());
                             // 添加城市
                             if (position == -1) {
                                 runOnUi(getString(R.string.add_city_fail), position);
@@ -407,7 +477,7 @@ public class CityManageActivity extends BaseActivity implements View.OnClickList
                             }
                         } catch (Exception e1) {
 //                            runOnUi(getString(R.string.unknown_error), position);
-                            LogUtil.e(LOG_TAG, "(Exception e1): " + e1.toString());
+                            Log.e(LOG_TAG, "(Exception e1): " + e1.toString());
                         }
                     }
                 }

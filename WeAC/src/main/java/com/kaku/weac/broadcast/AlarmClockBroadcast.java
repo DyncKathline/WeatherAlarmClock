@@ -37,7 +37,6 @@ import com.kaku.weac.bean.AlarmClock;
 import com.kaku.weac.common.WeacConstants;
 import com.kaku.weac.common.WeacStatus;
 import com.kaku.weac.db.AlarmClockOperate;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 
 /**
@@ -82,11 +81,11 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
             // 当上一次响起任务距离现在小于3秒时
         } else if ((now - WeacStatus.sLastStartTime) <= 3000) {
 
-            LogUtil.d(LOG_TAG, "进入3秒以内再次响铃 小睡次数：" + napTimesRan + "距离时间毫秒数："
+            Log.d(LOG_TAG, "进入3秒以内再次响铃 小睡次数：" + napTimesRan + "距离时间毫秒数："
                     + (now - WeacStatus.sLastStartTime));
-            LogUtil.d(LOG_TAG, "WeacStatus.strikerLevel："
+            Log.d(LOG_TAG, "WeacStatus.strikerLevel："
                     + WeacStatus.sStrikerLevel);
-//            LogUtil.d(LOG_TAG, "闹钟名：" + alarmClock.getTag());
+//            Log.d(LOG_TAG, "闹钟名：" + alarmClock.getTag());
 
             // 当是新闹钟任务并且上一次响起也为新闹钟任务时，开启了时间相同的多次闹钟，只保留一个其他关闭
             if ((napTimesRan == 0) & (WeacStatus.sStrikerLevel == 1)) {
@@ -128,6 +127,7 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
     private void intentNotification(Context context, AlarmClock alarmClock, int napTimesRan) {
         Log.e(LOG_TAG, "intentNotification");
         Intent fullScreenIntent = new Intent(context, AlarmClockOntimeActivity.class);
+//        fullScreenIntent.putExtra(WeacConstants.ALARM_CLOCK, alarmClock);
         PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(context, 0,
                 fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -151,8 +151,8 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
             builder.setChannelId(CHANNEL_ID);
         }
 
-        builder.setSmallIcon(R.drawable.ic_nap_notification)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nap_notification))
+        builder.setSmallIcon(R.drawable.ic_launcher)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher))
                 .setContentTitle(name)
                 .setContentText(Description)
                 .setAutoCancel(true)

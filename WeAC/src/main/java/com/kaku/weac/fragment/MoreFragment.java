@@ -53,7 +53,6 @@ import com.kaku.weac.activities.GenerateCodeActivity;
 import com.kaku.weac.activities.ThemeActivity;
 import com.kaku.weac.bean.Event.WallpaperEvent;
 import com.kaku.weac.util.DataCleanManager;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.OttoAppConfig;
 import com.kaku.weac.util.ToastUtil;
@@ -392,7 +391,7 @@ public class MoreFragment extends LazyLoadFragment {
             mProgressDialog = new Dialog(getActivity(), R.style.Theme_MyDialog);
             mProgressDialog.setContentView(R.layout.dialog_loading);
             mProgressDialog.setCancelable(false);
-            TextView msg = (TextView) mProgressDialog.findViewById(R.id.dialog_msg);
+            TextView msg = (TextView) mProgressDialog.findViewById(R.id.tv_message);
             msg.setText(message);
             mProgressDialog.show();
 
@@ -495,7 +494,7 @@ public class MoreFragment extends LazyLoadFragment {
                         appInfo = packageManager.getApplicationInfo(appProcessInfo.processName, 0);
 
                     } catch (PackageManager.NameNotFoundException e) {
-                        LogUtil.i(LOG_TAG, "clearMemory:>> " + e.toString());
+                        Log.i(LOG_TAG, "clearMemory:>> " + e.toString());
                         // :服务的命名
                         if (appProcessInfo.processName.contains(":")) {
                             appInfo = getApplicationInfo(appProcessInfo.processName.split(":")[0], packageManager);
@@ -595,7 +594,7 @@ public class MoreFragment extends LazyLoadFragment {
             // \D匹配一个非数字字符。等价于[^0-9]。
             return Integer.parseInt(subMemoryLine.replaceAll("\\D+", ""));
         } catch (IOException e) {
-            LogUtil.e(LOG_TAG, "getUsedPercentValue: " + e.toString());
+            Log.e(LOG_TAG, "getUsedPercentValue: " + e.toString());
         }
         return 0;
     }
@@ -614,7 +613,7 @@ public class MoreFragment extends LazyLoadFragment {
     @Override
     public void onResume() {
         super.onResume();
-        LogUtil.d(LOG_TAG, "onResume");
+        Log.d(LOG_TAG, "onResume");
         if (mIsPrepared) {
             updateUIStatus();
         }

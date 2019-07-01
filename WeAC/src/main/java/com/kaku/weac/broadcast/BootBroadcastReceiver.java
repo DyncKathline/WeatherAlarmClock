@@ -19,9 +19,9 @@ package com.kaku.weac.broadcast;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.kaku.weac.service.HeartBeatService;
-import com.kaku.weac.util.LogUtil;
 import com.sunfusheng.daemon.DaemonHolder;
 
 /**
@@ -39,7 +39,7 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        LogUtil.d(LOG_TAG, "onReceive ");
+        Log.d(LOG_TAG, "onReceive ");
         DaemonHolder.init(context, HeartBeatService.class);
     }
 

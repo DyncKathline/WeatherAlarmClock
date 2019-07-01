@@ -18,6 +18,8 @@ package com.kaku.weac.util;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.StringRes;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,7 +53,7 @@ public class ToastUtil {
                 // toast隐藏后，将其置为null
                 sToast = null;
             } catch (Exception e) {
-                LogUtil.e(LOG_TAG, "run方法出现错误：" + e.toString());
+                Log.e(LOG_TAG, "run方法出现错误：" + e.toString());
             }
         }
     };
@@ -64,7 +66,10 @@ public class ToastUtil {
      */
     public static void showShortToast(Context context, String msg) {
         showToast(context.getApplicationContext(), msg, Toast.LENGTH_SHORT, 1500);
+    }
 
+    public static void showShortToast(Context context, @StringRes int msg) {
+        showToast(context.getApplicationContext(), context.getResources().getString(msg), Toast.LENGTH_SHORT, 1500);
     }
 
     /**
@@ -76,6 +81,10 @@ public class ToastUtil {
     public static void showLongToast(Context context, String msg) {
         showToast(context.getApplicationContext(), msg, Toast.LENGTH_LONG, 3000);
 
+    }
+
+    public static void showLongToast(Context context, @StringRes int msg) {
+        showToast(context.getApplicationContext(), context.getResources().getString(msg), Toast.LENGTH_LONG, 3000);
     }
 
     /**

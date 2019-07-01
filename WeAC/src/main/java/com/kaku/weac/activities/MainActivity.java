@@ -24,6 +24,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -35,7 +36,6 @@ import com.kaku.weac.fragment.AlarmClockFragment;
 import com.kaku.weac.fragment.MoreFragment;
 import com.kaku.weac.fragment.TimeFragment;
 import com.kaku.weac.fragment.WeaFragment;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.ToastUtil;
 import com.yanzhenjie.permission.Action;
@@ -304,14 +304,14 @@ public class MainActivity extends BaseActivity implements OnClickListener {
                 // 取消线程
                 mWeaFragment.mHandler.removeCallbacks(mWeaFragment.mRun);
                 mWeaFragment.mIsPostDelayed = false;
-                LogUtil.i(LOG_TAG, "已移除刷新天气线程");
+                Log.i(LOG_TAG, "已移除刷新天气线程");
             }
             if (mWeaFragment.mPullRefreshScrollView != null) {
                 // 当正在刷新
                 if (mWeaFragment.mPullRefreshScrollView.isRefreshing()) {
                     // 停止刷新
                     mWeaFragment.mPullRefreshScrollView.onRefreshComplete();
-                    LogUtil.i(LOG_TAG, "已停止刷新天气动画");
+                    Log.i(LOG_TAG, "已停止刷新天气动画");
                 }
             }
             // 停止刷新动画
@@ -389,7 +389,7 @@ public class MainActivity extends BaseActivity implements OnClickListener {
 
     @Override
     protected void onDestroy() {
-        LogUtil.d(LOG_TAG, "onDestroy()");
+        Log.d(LOG_TAG, "onDestroy()");
 //        Process.killProcess(Process.myPid());
         super.onDestroy();
     }

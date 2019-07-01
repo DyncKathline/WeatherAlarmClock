@@ -31,6 +31,7 @@ import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,6 +40,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -57,12 +59,19 @@ import com.kaku.weac.bean.WeatherLifeIndex;
 import com.kaku.weac.broadcast.AlarmClockBroadcast;
 import com.kaku.weac.common.WeacConstants;
 import com.kaku.weac.common.WeacStatus;
+import com.kaku.weac.nohttp.CallServer;
+import com.kaku.weac.nohttp.ConstantRequest;
+import com.kaku.weac.nohttp.StringResponseListener;
 import com.kaku.weac.util.AudioPlayer;
 import com.kaku.weac.util.HttpUtil;
 import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
+import com.kaku.weac.util.ToastUtil;
 import com.kaku.weac.util.WeatherUtil;
 import com.kaku.weac.view.MySlidingView;
+import com.yanzhenjie.nohttp.RequestMethod;
+import com.yanzhenjie.nohttp.rest.Response;
+import com.yanzhenjie.nohttp.rest.StringRequest;
 
 import java.io.ByteArrayInputStream;
 import java.lang.ref.WeakReference;
@@ -84,7 +93,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
     /**
      * Log tag ：AlarmClockOntimeFragment
      */
-    private static final String LOG_TAG = "AlarmClockOntimeFragment";
+    private static final String LOG_TAG = "AlarmClockOntimeF";
 
     public static final String NOTIFICATION_CHANNEL = "myChannel";
 
@@ -183,7 +192,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LogUtil.d(LOG_TAG, getActivity().toString() + "：onCreate");
+        Log.d(LOG_TAG, "：onCreate");
 
         // 启动的Activity个数加1
         WeacStatus.sActivityNumber++;
@@ -222,7 +231,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
     @Override
     public View onCreateView(LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        LogUtil.d(LOG_TAG, getActivity().toString() + "：onCreateView");
+        Log.d(LOG_TAG, getActivity().toString() + "：onCreateView");
 
         View view = inflater.inflate(R.layout.fm_alarm_clock_ontime, container,
                 false);
@@ -261,7 +270,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
             napTv.setVisibility(View.GONE);
         }
 
-        LogUtil.i(LOG_TAG, "小睡次数：" + mNapTimes);
+        Log.i(LOG_TAG, "小睡次数：" + mNapTimes);
 
         // 滑动提示
         TextView slidingTipIv = (TextView) view.findViewById(R.id.sliding_tip_tv);
@@ -319,45 +328,50 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
                 address = getString(R.string.address_weather, weatherCode);
             }
             mWeatherPbar.setVisibility(View.VISIBLE);
-            HttpUtil.sendHttpRequest(address, cityName,
-                    new HttpCallbackListener() {
-                        @Override
-                        public void onFinish(String response) {
-                            try {
-                                if (!response.contains("error")) {
-                                    WeatherInfo weatherInfo = WeatherUtil.handleWeatherResponse(
-                                            new ByteArrayInputStream(response.getBytes()));
-                                    getActivity().runOnUiThread(new SetWeatherInfoRunnable(weatherInfo));
-                                    // 无法解析当前位置
-                                } else {
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            mWeatherPbar.setVisibility(View.GONE);
-                                        }
-                                    });
+            String url = ConstantRequest.getWeatherByCity + "?city=" + Uri.encode(cityName, "UTF-8");
+            final StringRequest request = new StringRequest(url, RequestMethod.GET);
+            CallServer.getInstance().request(request, new StringResponseListener(getActivity()) {
+                @Override
+                public void onSucceed(int what, Response<String> response) {
+                    super.onSucceed(what, response);
+                    String result = response.get();
+                    LogUtil.i( "onSucceed: " + result);
+                    try {
+                        if (!result.contains("error")) {
+                            WeatherInfo weatherInfo = WeatherUtil.handleWeatherResponse(
+                                    new ByteArrayInputStream(result.getBytes()));
+                            getActivity().runOnUiThread(new SetWeatherInfoRunnable(weatherInfo));
+                            // 无法解析当前位置
+                        } else {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mWeatherPbar.setVisibility(View.GONE);
                                 }
-                            } catch (Exception e) {
-                                LogUtil.e(LOG_TAG, "initWeather(): " + e.toString());
-                            }
+                            });
                         }
+                    } catch (Exception e) {
+                        Log.e(LOG_TAG, "initWeather(): " + e.toString());
+                    }
+                }
 
-                        @Override
-                        public void onError(final Exception e) {
-                            try {
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mWeatherPbar.setVisibility(View.GONE);
-                                    }
-                                });
-                            } catch (Exception e1) {
-                                LogUtil.e(LOG_TAG, e1.toString());
+                @Override
+                public void onFailed(int what, Response<String> response) {
+                    super.onFailed(what, response);
+                    try {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mWeatherPbar.setVisibility(View.GONE);
                             }
-                        }
-                    });
+                        });
+                    } catch (Exception e1) {
+                        Log.e(LOG_TAG, e1.getMessage());
+                    }
+                }
+            });
         } catch (Exception e) {
-            LogUtil.e(LOG_TAG, "initWeather()" + e.toString());
+            Log.e(LOG_TAG, "initWeather()" + e.toString());
             if (mWeatherPbar != null) {
                 mWeatherPbar.setVisibility(View.GONE);
             }
@@ -447,7 +461,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
 
                 mWeatherInfoGroup.setVisibility(View.VISIBLE);
             } catch (Exception e) {
-                LogUtil.e(LOG_TAG, e.toString());
+                Log.e(LOG_TAG, e.toString());
             } finally {
                 mWeatherPbar.setVisibility(View.GONE);
             }
@@ -457,13 +471,13 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
     @Override
     public void onStop() {
         super.onStop();
-//        LogUtil.d(LOG_TAG, getActivity().toString() + "：onStop");
+//        Log.d(LOG_TAG, getActivity().toString() + "：onStop");
         // 当第二个闹钟响起时第一个闹钟需要进入小睡或关闭闹钟（启动此Activity时加上
         // 【Intent.FLAG_ACTIVITY_CLEAR_TOP】flag 会自动关闭当前Activity，只有
         // 【Intent.FLAG_ACTIVITY_NEW_TASK】 flag的话，
         // 只是暂停，当第二个Activity结束后后会重新恢复显示）
 
-//        LogUtil.d(LOG_TAG, getActivity().toString() + "：activityNumber: "
+//        Log.d(LOG_TAG, getActivity().toString() + "：activityNumber: "
 //                + WeacStatus.sActivityNumber);
 
         // 当点击关闭或者小睡按钮或者画面关闭状态时或点击电源键闹钟响起会执行一次onStop()
@@ -486,7 +500,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
 
     @Override
     public void onDestroy() {
-        LogUtil.d(LOG_TAG, getActivity().toString() + "：onDestroy");
+        Log.d(LOG_TAG, getActivity().toString() + "：onDestroy");
         super.onDestroy();
         // 停止运行更新时间的线程
         mIsRun = false;
@@ -561,7 +575,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
         }
         // 小睡次数加1
         mNapTimesRan++;
-        LogUtil.d(LOG_TAG, "已执行小睡次数：" + mNapTimesRan);
+        Log.d(LOG_TAG, "已执行小睡次数：" + mNapTimesRan);
 
         // 设置小睡相关信息
         Intent intent = new Intent(getActivity(), AlarmClockBroadcast.class);
@@ -576,7 +590,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
         // 下次响铃时间
         long nextTime = System.currentTimeMillis() + 1000 * 60 * mNapInterval;
 
-        LogUtil.i(LOG_TAG, "小睡间隔:" + mNapInterval + "分钟");
+        Log.i(LOG_TAG, "小睡间隔:" + mNapInterval + "分钟");
 
         // 当前版本为19（4.4）或以上使用精准闹钟
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -708,7 +722,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
         public void run() {
             // Activity没有结束
             while (mIsRun) {
-                LogUtil.d(LOG_TAG, "TimeUpdateThread(已启动时间): " + startedTime);
+                Log.d(LOG_TAG, "TimeUpdateThread(已启动时间): " + startedTime);
 
                 try {
                     // 响铃XX分钟并且当前Activity没有被销毁进入小睡
@@ -719,7 +733,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
                                 onClickNapButton();
                                 return;
                             } else {
-                                LogUtil.w(LOG_TAG,
+                                Log.w(LOG_TAG,
                                         "准备进行自动小睡处理时，闹钟已经为Finishing状态");
                                 return;
                             }
@@ -743,7 +757,7 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
                     // 发送消息
                     mShowTimeHandler.sendMessage(msg);
                 } catch (InterruptedException | NullPointerException e) {
-                    LogUtil.e(LOG_TAG, "run方法出现错误：" + e.toString());
+                    Log.e(LOG_TAG, "run方法出现错误：" + e.toString());
                 }
             }
 

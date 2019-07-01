@@ -18,9 +18,10 @@ package com.kaku.weac.activities;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.kaku.weac.LeakCanaryApplication;
-import com.kaku.weac.util.LogUtil;
+import com.squareup.leakcanary.RefWatcher;
 //import com.squareup.leakcanary.RefWatcher;
 
 import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
@@ -46,14 +47,14 @@ public class BaseActivity extends SwipeBackActivity {
         mContext = this;
         mActivity = this;
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        LogUtil.i(LOG_TAG, getClass().getSimpleName());
+        Log.i(LOG_TAG, getClass().getSimpleName());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        RefWatcher refWatcher = LeakCanaryApplication.getRefWatcher(this);
-//        refWatcher.watch(this);
+        RefWatcher refWatcher = LeakCanaryApplication.getRefWatcher(this);
+        refWatcher.watch(this);
     }
 
     @Override

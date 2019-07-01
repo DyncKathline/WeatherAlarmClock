@@ -25,10 +25,10 @@ import org.litepal.tablemanager.model.ColumnModel;
 import org.litepal.tablemanager.model.TableModel;
 import org.litepal.util.Const;
 import org.litepal.util.DBUtility;
-import org.litepal.util.LogUtil;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.Log;
 
 /**
  * Upgrade the database. The first step is to remove the columns that can not
@@ -158,7 +158,7 @@ public class Upgrader extends AssociationUpdater {
                 removeColumns.add(dbColumnName);
             }
         }
-        LogUtil.d(TAG, "remove columns from " + tableName + " >> " + removeColumns);
+        Log.d(TAG, "remove columns from " + tableName + " >> " + removeColumns);
 		return removeColumns;
 	}
 
@@ -181,7 +181,7 @@ public class Upgrader extends AssociationUpdater {
                     }
                     if (!hasConstraintChanged) {
                         // for reducing loops, check column constraints change here.
-                        LogUtil.d(TAG, "default value db is:" + columnModelDB.getDefaultValue() + ", default value is:" + columnModel.getDefaultValue());
+                        Log.d(TAG, "default value db is:" + columnModelDB.getDefaultValue() + ", default value is:" + columnModel.getDefaultValue());
                         if (columnModelDB.isNullable() != columnModel.isNullable() ||
                             !columnModelDB.getDefaultValue().equalsIgnoreCase(columnModel.getDefaultValue()) ||
                             (columnModelDB.isUnique() && !columnModel.isUnique())) { // unique constraint can not be added
@@ -257,7 +257,7 @@ public class Upgrader extends AssociationUpdater {
      *            The column names that need to remove.
      */
     private void removeColumns(List<String> removeColumnNames) {
-        LogUtil.d(TAG, "do addColumn");
+        Log.d(TAG, "do addColumn");
         removeColumns(removeColumnNames, mTableModel.getTableName());
         for (String columnName : removeColumnNames) {
             mTableModelDB.removeColumnModelByName(columnName);
@@ -272,7 +272,7 @@ public class Upgrader extends AssociationUpdater {
 	 *            List with ColumnModel to add new column.
 	 */
 	private void addColumns(List<ColumnModel> columnModelList) {
-        LogUtil.d(TAG, "do addColumn");
+        Log.d(TAG, "do addColumn");
 		execute(getAddColumnSQLs(columnModelList), mDb);
         for (ColumnModel columnModel : columnModelList) {
             mTableModelDB.addColumnModel(columnModel);
@@ -287,7 +287,7 @@ public class Upgrader extends AssociationUpdater {
 	 *            List with ColumnModel to change column type.
 	 */
 	private void changeColumnsType(List<ColumnModel> columnModelList) {
-        LogUtil.d(TAG, "do changeColumnsType");
+        Log.d(TAG, "do changeColumnsType");
         List<String> columnNames = new ArrayList<String>();
         if (columnModelList != null && !columnModelList.isEmpty()) {
             for (ColumnModel columnModel : columnModelList) {
@@ -304,7 +304,7 @@ public class Upgrader extends AssociationUpdater {
      */
     private void changeColumnsConstraints() {
         if (hasConstraintChanged) {
-            LogUtil.d(TAG, "do changeColumnsConstraints");
+            Log.d(TAG, "do changeColumnsConstraints");
             execute(getChangeColumnsConstraintsSQL(), mDb);
         }
     }
@@ -326,11 +326,11 @@ public class Upgrader extends AssociationUpdater {
         sqls.addAll(addForeignKeySQLs);
         sqls.add(dataMigrationSQL);
         sqls.add(dropTempTableSQL);
-        LogUtil.d(TAG, "generateChangeConstraintSQL >> ");
+        Log.d(TAG, "generateChangeConstraintSQL >> ");
         for (String sql : sqls) {
-            LogUtil.d(TAG, sql);
+            Log.d(TAG, sql);
         }
-        LogUtil.d(TAG, "<< generateChangeConstraintSQL");
+        Log.d(TAG, "<< generateChangeConstraintSQL");
         return sqls.toArray(new String[0]);
     }
 

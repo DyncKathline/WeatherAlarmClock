@@ -18,13 +18,13 @@ package com.kaku.weac.activities;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.kaku.weac.R;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 
 
@@ -68,7 +68,7 @@ public class AboutActivity extends BaseActivity {
             TextView SloganTv = (TextView) findViewById(R.id.weac_slogan_tv);
             SloganTv.setTypeface(fontFace);
         } catch (Exception e) {
-            LogUtil.e(LOG_TAG, "Typeface.createFromAsset: " + e.toString());
+            Log.e(LOG_TAG, "Typeface.createFromAsset: " + e.toString());
         }
     }
 

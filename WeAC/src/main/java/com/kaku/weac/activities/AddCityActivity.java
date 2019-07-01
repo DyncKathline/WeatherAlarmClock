@@ -19,6 +19,7 @@ package com.kaku.weac.activities;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Spannable;
@@ -26,6 +27,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -36,16 +38,14 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.baidu.location.BDLocation;
-import com.baidu.location.BDLocationListener;
-import com.baidu.location.LocationClient;
-import com.baidu.location.LocationClientOption;
 import com.kaku.weac.R;
 import com.kaku.weac.adapter.AddCityAdapter;
 import com.kaku.weac.bean.County;
 import com.kaku.weac.common.WeacConstants;
 import com.kaku.weac.db.WeatherDBOperate;
-import com.kaku.weac.util.LogUtil;
+import com.kaku.weac.locationManager.DLocationTools;
+import com.kaku.weac.locationManager.DLocationUtils;
+import com.kaku.weac.locationManager.OnLocationChangeListener;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.ToastUtil;
 
@@ -132,16 +132,6 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
      * 进度对话框
      */
     private Dialog mProgressDialog;
-
-    /**
-     * 百度定位服务
-     */
-    private LocationClient mLocationClient;
-
-    /**
-     * 百度定位监听
-     */
-    private BDLocationListener mBDLocationListener;
 
     /**
      * 请求MyDialogActivity
@@ -422,7 +412,7 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
 
             SpannableString item = mSearchCityAdapter.getItem(position);
             String city = item.toString().split("-")[0].trim();
-            LogUtil.d(LOG_TAG, "city：" + city);
+            Log.d(LOG_TAG, "city：" + city);
 
             // 当尚未添加此城市
             if (isCityNoAdd(city)) {
@@ -450,12 +440,7 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
      * 初始化定位管理监听
      */
     private void initLocationManager() {
-        if (mLocationClient == null) {
-            mLocationClient = new LocationClient(getApplicationContext());
-        }
-        if (mBDLocationListener == null) {
-            mBDLocationListener = new MyLocationListener();
-        }
+        DLocationUtils.init(mContext);
     }
 
     /**
@@ -583,71 +568,61 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
 
         // 初始化定位管理，监听
         initLocationManager();
-        mLocationClient.registerLocationListener(mBDLocationListener);    //注册监听函数
-        initLocation();
+        DLocationUtils.getInstance().register(locationChangeListener);    //注册监听函数
 
         showProgressDialog(getString(R.string.now_locating));
-
-        mLocationClient.start();
-        mLocationClient.requestLocation();
     }
 
-    private void initLocation() {
-        LocationClientOption option = new LocationClientOption();
-        option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系
-        option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
-//        option.setOpenGps(true);//可选，默认false,设置是否使用gps
-        option.disableCache(true);// 禁止启用缓存定位
-        mLocationClient.setLocOption(option);
-
-//        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy
-//        );//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
-//        int span = 1000;
-//        option.setScanSpan(span);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
-//        option.setLocationNotify(true);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
-//        option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
-//        option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
-//        option.setIgnoreKillProcess(false);//可选，默认false，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认杀死
-//        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
-//        option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
-    }
-
-    class MyLocationListener implements BDLocationListener {
+    private OnLocationChangeListener locationChangeListener = new OnLocationChangeListener() {
+        @Override
+        public void getLastKnownLocation(Location location) {
+            Log.e(LOG_TAG, "onLocationChanged: " + location.getLatitude());
+            updateGPSInfo(location);
+        }
 
         @Override
-        public void onReceiveLocation(BDLocation location) {
-            closeProgressDialog();
-            mLocationClient.stop();
-            mLocationClient.unRegisterLocationListener(mBDLocationListener);
-            if (location == null) {
-                ToastUtil.showShortToast(AddCityActivity.this, getString(R.string.location_fail));
-                return;
-            }
-            LogUtil.d(LOG_TAG, "纬度：" + location.getLatitude() + ",经度：" + location.getLongitude());
+        public void onLocationChanged(Location location) {
+            Log.e(LOG_TAG, "定位方式：" + location.getProvider());
+            Log.e(LOG_TAG, "纬度：" + location.getLatitude());
+            Log.e(LOG_TAG, "经度：" + location.getLongitude());
+            Log.e(LOG_TAG, "海拔：" + location.getAltitude());
+            Log.e(LOG_TAG, "时间：" + location.getTime());
+            Log.e(LOG_TAG, "国家：" + DLocationTools.getCountryName(mContext, location.getLatitude(), location.getLongitude()));
+            Log.e(LOG_TAG, "获取地理位置：" + DLocationTools.getAddress(mContext, location.getLatitude(), location.getLongitude()));
+            Log.e(LOG_TAG, "所在地：" + DLocationTools.getLocality(mContext, location.getLatitude(), location.getLongitude()));
+            Log.e(LOG_TAG, "所在街道：" + DLocationTools.getStreet(mContext, location.getLatitude(), location.getLongitude()));
+            updateGPSInfo(location);
+        }
 
-            String address = location.getAddrStr();
-            // 定位成功
-            if (161 == location.getLocType() && address != null) {
-                String cityName = MyUtil.formatCity(address);
-                if (cityName != null) {
-                    LogUtil.d(LOG_TAG, "城市名：" + cityName);
-                    Intent intent = getIntent();
-                    intent.putExtra(WeacConstants.CITY_NAME, cityName);
-                    setResult(Activity.RESULT_OK, intent);
-                    AddCityActivity.this.finish();
-                } else {
-                    ToastUtil.showLongToast(AddCityActivity.this, getString(R.string.can_not_find_current_location));
-                }
-                // 定位失败
-            } else {
-                LogUtil.d(LOG_TAG, "error code: " + location.getLocType());
-                Intent intent = new Intent(AddCityActivity.this, MyDialogActivity.class);
-                intent.putExtra(WeacConstants.TITLE, getString(R.string.prompt));
-                intent.putExtra(WeacConstants.DETAIL, getString(R.string.location_fail));
-                intent.putExtra(WeacConstants.SURE_TEXT, getString(R.string.retry));
-                startActivityForResult(intent, REQUEST_MY_DIALOG);
-            }
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
 
+        }
+    };
+
+    private void updateGPSInfo(Location location) {
+        closeProgressDialog();
+//        DLocationUtils.getInstance().unregister();
+        if (location == null) {
+            ToastUtil.showShortToast(AddCityActivity.this, getString(R.string.location_fail));
+//            Intent intent = new Intent(AddCityActivity.this, MyDialogActivity.class);
+//            intent.putExtra(WeacConstants.TITLE, getString(R.string.prompt));
+//            intent.putExtra(WeacConstants.DETAIL, getString(R.string.location_fail));
+//            intent.putExtra(WeacConstants.SURE_TEXT, getString(R.string.retry));
+//            startActivityForResult(intent, REQUEST_MY_DIALOG);
+            return;
+        }
+        Log.d(LOG_TAG, "纬度：" + location.getLatitude() + ",经度：" + location.getLongitude());
+
+        String cityName = DLocationTools.getLocality(mContext, location.getLatitude(), location.getLongitude());
+        if (cityName != null) {
+            Log.d(LOG_TAG, "城市名：" + cityName);
+            Intent intent = getIntent();
+            intent.putExtra(WeacConstants.CITY_NAME, cityName);
+            setResult(Activity.RESULT_OK, intent);
+            AddCityActivity.this.finish();
+        } else {
+            ToastUtil.showLongToast(AddCityActivity.this, getString(R.string.can_not_find_current_location));
         }
     }
 
@@ -778,7 +753,7 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
             mGvTitle.setText(R.string.china);
             mCurrentLevel = LEVEL_PROVINCE;
         } catch (Exception e) {
-            LogUtil.d(LOG_TAG, "queryProvinces(): " + e.toString());
+            Log.d(LOG_TAG, "queryProvinces(): " + e.toString());
         }
     }
 
@@ -810,7 +785,7 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
             mGvTitle.setText(mSelectedProvince);
             mCurrentLevel = LEVEL_CITY;
         } catch (Exception e) {
-            LogUtil.d(LOG_TAG, "queryCities(): " + e.toString());
+            Log.d(LOG_TAG, "queryCities(): " + e.toString());
         }
     }
 
@@ -848,7 +823,7 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
             mGvTitle.setText(mSelectedCity);
             mCurrentLevel = LEVEL_COUNTY;
         } catch (Exception e) {
-            LogUtil.d(LOG_TAG, "queryCounties(): " + e.toString());
+            Log.d(LOG_TAG, "queryCounties(): " + e.toString());
         }
     }
 
@@ -860,7 +835,7 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
             mProgressDialog = new Dialog(this, R.style.Theme_MyDialog);
             mProgressDialog.setContentView(R.layout.dialog_loading);
             mProgressDialog.setCancelable(false);
-            TextView msg = (TextView) mProgressDialog.findViewById(R.id.dialog_msg);
+            TextView msg = (TextView) mProgressDialog.findViewById(R.id.tv_message);
             msg.setText(message);
             mProgressDialog.show();
 
@@ -886,5 +861,11 @@ public class AddCityActivity extends BaseActivity implements View.OnClickListene
     public void onBackPressed() {
         dispatchBackAction(1);
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        DLocationUtils.getInstance().unregister();
     }
 }

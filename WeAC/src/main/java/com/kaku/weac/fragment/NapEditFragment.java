@@ -19,6 +19,7 @@ package com.kaku.weac.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,7 +32,6 @@ import android.widget.RadioGroup.OnCheckedChangeListener;
 
 import com.kaku.weac.R;
 import com.kaku.weac.common.WeacConstants;
-import com.kaku.weac.util.LogUtil;
 
 /**
  * 小睡编辑fragment
@@ -112,7 +112,7 @@ public class NapEditFragment extends BaseFragment implements OnClickListener {
                         // 取得选中按钮的小睡间隔时间
                         mNapInterval = Integer.parseInt(mNapIntervalRbtn
                                 .getText().toString());
-                        LogUtil.i(LOG_TAG, "小睡间隔：" + mNapInterval);
+                        Log.i(LOG_TAG, "小睡间隔：" + mNapInterval);
 
                     }
                 });
@@ -133,7 +133,7 @@ public class NapEditFragment extends BaseFragment implements OnClickListener {
                 // 取得选中按钮的小睡次数
                 mNapTimes = Integer
                         .parseInt(mNapTimesRbtn.getText().toString());
-                LogUtil.i(LOG_TAG, "小睡次数：" + mNapTimes);
+                Log.i(LOG_TAG, "小睡次数：" + mNapTimes);
             }
         });
         // 默认选中小睡次数按钮

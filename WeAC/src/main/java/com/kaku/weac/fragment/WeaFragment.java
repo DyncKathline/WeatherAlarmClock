@@ -20,10 +20,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,10 +40,6 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.baidu.location.BDLocation;
-import com.baidu.location.BDLocationListener;
-import com.baidu.location.LocationClient;
-import com.baidu.location.LocationClientOption;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
@@ -48,6 +47,7 @@ import com.handmark.pulltorefresh.library.ScrollViewListener;
 import com.kaku.weac.Listener.HttpCallbackListener;
 import com.kaku.weac.Listener.OnVisibleListener;
 import com.kaku.weac.R;
+import com.kaku.weac.activities.AddCityActivity;
 import com.kaku.weac.activities.CityManageActivity;
 import com.kaku.weac.activities.LifeIndexDetailActivity;
 import com.kaku.weac.activities.WeatherAlarmActivity;
@@ -58,6 +58,12 @@ import com.kaku.weac.bean.WeatherInfo;
 import com.kaku.weac.bean.WeatherLifeIndex;
 import com.kaku.weac.common.WeacConstants;
 import com.kaku.weac.db.WeatherDBOperate;
+import com.kaku.weac.locationManager.DLocationTools;
+import com.kaku.weac.locationManager.DLocationUtils;
+import com.kaku.weac.locationManager.OnLocationChangeListener;
+import com.kaku.weac.nohttp.CallServer;
+import com.kaku.weac.nohttp.ConstantRequest;
+import com.kaku.weac.nohttp.StringResponseListener;
 import com.kaku.weac.util.HttpUtil;
 import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
@@ -66,8 +72,12 @@ import com.kaku.weac.util.ToastUtil;
 import com.kaku.weac.util.WeatherUtil;
 import com.kaku.weac.view.LineChartViewDouble;
 import com.squareup.otto.Subscribe;
+import com.yanzhenjie.nohttp.RequestMethod;
+import com.yanzhenjie.nohttp.rest.Response;
+import com.yanzhenjie.nohttp.rest.StringRequest;
 
 import java.io.ByteArrayInputStream;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -608,18 +618,7 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
      */
     private String mCityWeatherCode;
 
-
     /**
-     * 百度定位服务
-     */
-    private LocationClient mLocationClient;
-
-    /**
-     * 百度定位监听
-     */
-    private BDLocationListener mBDLocationListener;
-/*
-    *//**
      * 首次打开天气界面
      *//*
     private boolean mIsFirstUse = false;*/
@@ -698,7 +697,7 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
                     try {
                         initWeather(WeatherUtil.readWeatherInfo(getActivity(), mCityName));
                     } catch (Exception e) {
-                        LogUtil.e(LOG_TAG, e.toString());
+                        Log.e(LOG_TAG, e.toString());
                     }
 
                     showWeatherLayout();
@@ -743,102 +742,97 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
 
         // 初始化定位管理，监听
         initLocationManager();
-        mLocationClient.registerLocationListener(mBDLocationListener);    //注册监听函数
-        initLocation();
-        mLocationClient.start();
-        mLocationClient.requestLocation();
     }
-
 
     /**
      * 初始化定位管理监听
      */
     private void initLocationManager() {
-        if (mLocationClient == null) {
-            mLocationClient = new LocationClient(getActivity().getApplicationContext());
-        }
-        if (mBDLocationListener == null) {
-            mBDLocationListener = new MyLocationListener();
-        }
+        DLocationUtils.init(getContext());
+        DLocationUtils.getInstance().register(locationChangeListener);    //注册监听函数
     }
 
-    private void initLocation() {
-        LocationClientOption option = new LocationClientOption();
-        option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系
-        option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
-//        option.setOpenGps(true);//可选，默认false,设置是否使用gps
-        option.disableCache(true);// 禁止启用缓存定位\
-        mLocationClient.setLocOption(option);
-    }
-
-    class MyLocationListener implements BDLocationListener {
+    private OnLocationChangeListener locationChangeListener = new OnLocationChangeListener() {
+        @Override
+        public void getLastKnownLocation(Location location) {
+            Log.e(LOG_TAG, "onLocationChanged: " + location.getLatitude());
+            updateGPSInfo(location);
+        }
 
         @Override
-        public void onReceiveLocation(BDLocation location) {
-            try {
-                mLocationClient.stop();
-                mLocationClient.unRegisterLocationListener(mBDLocationListener);
-                if (location == null) {
-                    ToastUtil.showShortToast(getActivity(), getString(R.string.location_fail));
+        public void onLocationChanged(Location location) {
+            Log.e(LOG_TAG, "定位方式：" + location.getProvider());
+            Log.e(LOG_TAG, "纬度：" + location.getLatitude());
+            Log.e(LOG_TAG, "经度：" + location.getLongitude());
+            Log.e(LOG_TAG, "海拔：" + location.getAltitude());
+            Log.e(LOG_TAG, "时间：" + location.getTime());
+            Log.e(LOG_TAG, "国家：" + DLocationTools.getCountryName(getContext(), location.getLatitude(), location.getLongitude()));
+            Log.e(LOG_TAG, "获取地理位置：" + DLocationTools.getAddress(getContext(), location.getLatitude(), location.getLongitude()));
+            Log.e(LOG_TAG, "所在地：" + DLocationTools.getLocality(getContext(), location.getLatitude(), location.getLongitude()));
+            Log.e(LOG_TAG, "所在街道：" + DLocationTools.getStreet(getContext(), location.getLatitude(), location.getLongitude()));
+            updateGPSInfo(location);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.e(LOG_TAG, "定位方式：" + provider + ", 状态：" + status);
+        }
+    };
+
+    private void updateGPSInfo(Location location) {
+        try {
+//            DLocationUtils.getInstance().unregister();
+            if (location == null) {
+                ToastUtil.showShortToast(getActivity(), getString(R.string.location_fail));
+                mIsOnlyLocation = false;
+                stopRefresh();
+                return;
+            }
+            Log.d(LOG_TAG, "纬度：" + location.getLatitude() + ",经度：" + location.getLongitude());
+
+            String cityName = DLocationTools.getLocality(getContext(), location.getLatitude(), location.getLongitude());
+            if (cityName != null) {
+                Log.d(LOG_TAG, "城市名：" + cityName);
+                mCityName = cityName;
+                mCityWeatherCode = getString(R.string.auto_location);
+
+                // 初次加载定位保存
+                if (/*mIsFirstUse || */getDefaultCityName() == null) {
+                    SharedPreferences share = getActivity().getSharedPreferences(
+                            WeacConstants.EXTRA_WEAC_SHARE, Activity.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = share.edit();
+                    // 保存默认的城市名
+                    editor.putString(WeacConstants.DEFAULT_CITY_NAME, mCityName);
+                    // 保存默认的天气代码
+                    editor.putString(WeacConstants.DEFAULT_WEATHER_CODE, mCityWeatherCode);
+                    editor.apply();
+//                            mIsFirstUse = false;
+                }
+
+                if (mIsOnlyLocation) {
                     mIsOnlyLocation = false;
                     return;
                 }
-                LogUtil.d(LOG_TAG, "纬度：" + location.getLatitude() + ",经度：" + location.getLongitude());
 
-                String address = location.getAddrStr();
-                // 定位成功
-                if (161 == location.getLocType() && address != null) {
-                    String cityName = MyUtil.formatCity(address);
-                    if (cityName != null) {
-                        LogUtil.d(LOG_TAG, "城市名：" + cityName);
-                        mCityName = cityName;
-                        mCityWeatherCode = getString(R.string.auto_location);
-
-                        // 初次加载定位保存
-                        if (/*mIsFirstUse || */getDefaultCityName() == null) {
-                            SharedPreferences share = getActivity().getSharedPreferences(
-                                    WeacConstants.EXTRA_WEAC_SHARE, Activity.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = share.edit();
-                            // 保存默认的城市名
-                            editor.putString(WeacConstants.DEFAULT_CITY_NAME, mCityName);
-                            // 保存默认的天气代码
-                            editor.putString(WeacConstants.DEFAULT_WEATHER_CODE, mCityWeatherCode);
-                            editor.apply();
-//                            mIsFirstUse = false;
-                        }
-
-                        if (mIsOnlyLocation) {
-                            mIsOnlyLocation = false;
-                            return;
-                        }
-
-                        // 立刻更新
-                        if (mIsPromptRefresh) {
-                            LogUtil.d(LOG_TAG, "onReceiveLocation：refreshWeather()");
-                            refreshWeather();
-                        } else {
-                            mIsPromptRefresh = true;
-                            mIsLocated = true;
-//                            mIsPrepared = true;
-                            LogUtil.d(LOG_TAG, "onReceiveLocation：lazyLoad()");
-                            pullToRefresh();
-                        }
-                    } else {
-                        mIsOnlyLocation = false;
-                        stopRefresh();
-                        ToastUtil.showShortToast(getActivity(), getString(R.string.can_not_find_current_location));
-                    }
-                    // 定位失败
+                // 立刻更新
+                if (mIsPromptRefresh) {
+                    Log.d(LOG_TAG, "onReceiveLocation：refreshWeather()");
+                    refreshWeather();
                 } else {
-                    mIsOnlyLocation = false;
-                    stopRefresh();
-                    ToastUtil.showShortToast(getActivity(), getString(R.string.auto_location_error_retry));
+                    mIsPromptRefresh = true;
+                    mIsLocated = true;
+//                            mIsPrepared = true;
+                    Log.d(LOG_TAG, "onReceiveLocation：lazyLoad()");
+                    pullToRefresh();
                 }
-            } catch (Exception e) {
+            } else {
                 mIsOnlyLocation = false;
-                LogUtil.e(LOG_TAG, "onReceiveLocation" + e.toString());
+                stopRefresh();
+                ToastUtil.showShortToast(getActivity(), getString(R.string.can_not_find_current_location));
             }
-
+        } catch (Exception e) {
+            mIsOnlyLocation = false;
+            Log.e(LOG_TAG, "onReceiveLocation" + e.toString());
         }
     }
 
@@ -884,7 +878,7 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
 //                        mHasLoadedOnce = true;
                     }
                 } catch (Exception e) {
-                    LogUtil.e(LOG_TAG, e.toString());
+                    Log.e(LOG_TAG, e.toString());
                 }
             }
         };
@@ -1006,10 +1000,10 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
 
         // 不是从自动定位返回
         if (!mIsLocated && mCityWeatherCode.equals(getString(R.string.auto_location))) {
-            LogUtil.d(LOG_TAG, "  startLocation()");
+            Log.d(LOG_TAG, "  startLocation()");
             locationPromptRefresh();
         } else {
-            LogUtil.d(LOG_TAG, "  refreshWeather()");
+            Log.d(LOG_TAG, "  refreshWeather()");
             mIsLocated = false;
             refreshWeather();
         }
@@ -1145,51 +1139,55 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
             cityName = null;
             address = getString(R.string.address_weather, mCityWeatherCode);
         }
-        HttpUtil.sendHttpRequest(address, cityName,
-                new HttpCallbackListener() {
-                    @Override
-                    public void onFinish(String response) {
-                        try {
-                            if (!response.contains("error")) {
-                                WeatherInfo weatherInfo = WeatherUtil.handleWeatherResponse(
-                                        new ByteArrayInputStream(response.getBytes()));
-                                // 保存天气信息
-                                WeatherUtil.saveWeatherInfo(weatherInfo, getActivity());
-                                getActivity().runOnUiThread(new SetWeatherInfoRunnable(weatherInfo));
-                                // 无法解析当前位置
-                            } else {
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        stopRefresh();
-                                        ToastUtil.showLongToast(getActivity(), getString(R.string.can_not_find_current_location));
-                                    }
-                                });
+        String url = ConstantRequest.getWeatherByCity + "?city=" + Uri.encode(cityName, "UTF-8");
+        final StringRequest request = new StringRequest(url, RequestMethod.GET);
+        CallServer.getInstance().request(request, new StringResponseListener(getActivity()) {
+            @Override
+            public void onSucceed(int what, Response<String> response) {
+                super.onSucceed(what, response);
+                String result = response.get();
+                LogUtil.i( "onSucceed: " + result);
+                try {
+                    if (!result.contains("error")) {
+                        WeatherInfo weatherInfo = WeatherUtil.handleWeatherResponse(
+                                new ByteArrayInputStream(result.getBytes()));
+                        // 保存天气信息
+                        WeatherUtil.saveWeatherInfo(weatherInfo, getActivity());
+                        getActivity().runOnUiThread(new SetWeatherInfoRunnable(weatherInfo));
+                        // 无法解析当前位置
+                    } else {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopRefresh();
+                                ToastUtil.showLongToast(getActivity(), getString(R.string.can_not_find_current_location));
                             }
-                        } catch (Exception e) {
-//                            stopRefresh();
-                            LogUtil.e(LOG_TAG, "refreshWeather: " + e.toString());
-                        }
+                        });
                     }
-
-                    @Override
-                    public void onError(final Exception e) {
-                        try {
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    stopRefresh();
-                                    ToastUtil.showShortToast(getActivity(),
-                                            getString(R.string.internet_fail));
-                                }
-                            });
-                        } catch (Exception e1) {
+                } catch (Exception e) {
 //                            stopRefresh();
-                            LogUtil.e(LOG_TAG, "refreshWeather: " + e1.toString());
-                        }
-                    }
+                    Log.e(LOG_TAG, "refreshWeather: " + e.toString());
                 }
-        );
+            }
+
+            @Override
+            public void onFailed(int what, Response<String> response) {
+                super.onFailed(what, response);
+                try {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            stopRefresh();
+                            ToastUtil.showShortToast(getActivity(),
+                                    getString(R.string.internet_fail));
+                        }
+                    });
+                } catch (Exception e1) {
+//                            stopRefresh();
+                    Log.e(LOG_TAG, "refreshWeather: " + e1.toString());
+                }
+            }
+        });
     }
 
     /**
@@ -1221,7 +1219,7 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
                 stopRefresh();
                 initWeather(mWeatherInfo);
             } catch (Exception e) {
-                LogUtil.e(LOG_TAG, "SetWeatherInfoRunnable: " + e.toString());
+                Log.e(LOG_TAG, "SetWeatherInfoRunnable: " + e.toString());
             }
         }
     }
@@ -1863,7 +1861,7 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
                                 .parse(weatherInfo.getAlarmTime());
                         format = new SimpleDateFormat("MM月dd日 HH:mm", Locale.getDefault()).format(date);
                     } catch (ParseException e) {
-                        LogUtil.e(LOG_TAG, "initWeather: " + e.toString());
+                        Log.e(LOG_TAG, "initWeather: " + e.toString());
                         format = weatherInfo.getAlarmTime();
                     }
                     String time = getString(R.string.release_time, format);
@@ -2038,7 +2036,6 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
      *
      * @param index 生活指数信息
      */
-
     private void setLifeIndex(WeatherLifeIndex index) {
         switch (index.getIndexName()) {
             case "雨伞指数":
@@ -2349,7 +2346,7 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
         mPullRefreshScrollView.setScrollViewListener(new ScrollViewListener() {
             @Override
             public void onScrollChanged(ScrollView scrollView, int x, int y, int oldx, int oldy) {
-//                LogUtil.i(LOG_TAG, "x: " + x + "y: " + y + "oldx: " + oldx + "oldy: " + oldy);
+//                Log.i(LOG_TAG, "x: " + x + "y: " + y + "oldx: " + oldx + "oldy: " + oldy);
                 // scroll最大滚动距离（xxxh：2320）/密度（xxxh：3）/1.5  =  515
                 mAlpha = Math.round(Math.round(y / mDensity / 1.5));
                 if (mAlpha > 255) {
@@ -2381,7 +2378,7 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
                     @Override
                     public void onRefresh(
                             PullToRefreshBase<ScrollView> refreshView) {
-                        LogUtil.d(LOG_TAG, "  setPullToRefresh()");
+                        Log.d(LOG_TAG, "  setPullToRefresh()");
                         locationOrRefresh();
                     }
                 });
@@ -2391,6 +2388,7 @@ public class WeaFragment extends LazyLoadFragment implements View.OnClickListene
     @Override
     public void onDestroy() {
         super.onDestroy();
+        DLocationUtils.getInstance().unregister();
         OttoAppConfig.getInstance().unregister(this);
         mAlpha = 0;
         if (mHandler != null) {

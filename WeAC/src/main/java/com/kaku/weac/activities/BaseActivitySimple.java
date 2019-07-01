@@ -18,9 +18,9 @@ package com.kaku.weac.activities;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 
 import com.kaku.weac.LeakCanaryApplication;
-import com.kaku.weac.util.LogUtil;
 import com.squareup.leakcanary.RefWatcher;
 
 /**
@@ -35,7 +35,7 @@ public class BaseActivitySimple extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LogUtil.i(LOG_TAG, getClass().getSimpleName());
+        Log.i(LOG_TAG, getClass().getSimpleName());
     }
 
     @Override

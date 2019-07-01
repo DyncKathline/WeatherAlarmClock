@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
+import android.util.Log;
 import android.util.Xml;
 
 import com.kaku.weac.R;
@@ -309,7 +310,7 @@ public class WeatherUtil {
             }
 
         } catch (Exception e) {
-            LogUtil.e(LOG_TAG, e.toString());
+            Log.e(LOG_TAG, e.toString());
         }
         weatherInfo.setWeatherDaysForecast(weatherDaysForecasts);
         weatherInfo.setWeatherLifeIndex(weatherLifeIndexes);
@@ -342,7 +343,7 @@ public class WeatherUtil {
                     weatherInfo.getCity()), System.currentTimeMillis());
             editor.apply();
         } catch (IOException e) {
-            LogUtil.e(LOG_TAG, e.toString());
+            Log.e(LOG_TAG, e.toString());
         }
     }
 
@@ -367,7 +368,7 @@ public class WeatherUtil {
             ObjectInputStream bis = new ObjectInputStream(bais);
             weatherInfo = (WeatherInfo) bis.readObject();
         } catch (Exception e) {
-            LogUtil.e(LOG_TAG, e.toString());
+            Log.e(LOG_TAG, e.toString());
         }
         return weatherInfo;
     }

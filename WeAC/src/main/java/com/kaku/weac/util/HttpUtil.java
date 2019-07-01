@@ -18,6 +18,12 @@ package com.kaku.weac.util;
 
 import com.kaku.weac.Listener.HttpCallbackListener;
 
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.concurrent.TimeUnit;
 
@@ -78,4 +84,5 @@ public class HttpUtil {
             }
         }).start();
     }
+
 }

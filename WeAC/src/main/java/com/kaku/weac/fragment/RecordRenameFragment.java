@@ -21,6 +21,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -33,7 +34,6 @@ import android.widget.TextView;
 
 import com.kaku.weac.R;
 import com.kaku.weac.common.WeacConstants;
-import com.kaku.weac.util.LogUtil;
 
 import java.io.File;
 
@@ -117,7 +117,7 @@ public class RecordRenameFragment extends BaseFragment implements OnClickListene
                     // 弹出软键盘
                     inputManager.showSoftInput(mRenameEt, 0);
                 } catch (Exception e) {
-                    LogUtil.e(LOG_TAG, "run方法出现错误：" + e.toString());
+                    Log.e(LOG_TAG, "run方法出现错误：" + e.toString());
                 }
 
             }

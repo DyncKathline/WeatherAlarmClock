@@ -19,8 +19,7 @@ package com.kaku.weac.view;
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-
-import com.kaku.weac.util.LogUtil;
+import android.util.Log;
 
 /**
  * @author 咖枯
@@ -38,7 +37,7 @@ public class ErrorCatchLinearLayoutManager extends LinearLayoutManager {
         try {
             super.onLayoutChildren(recycler, state);
         } catch (IndexOutOfBoundsException e) {
-            LogUtil.e(LOG_TAG, "RecyclerView 错误：" + e.toString());
+            Log.e(LOG_TAG, "RecyclerView 错误：" + e.toString());
         }
     }
 }

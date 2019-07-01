@@ -25,6 +25,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -48,7 +49,6 @@ import com.kaku.weac.bean.RingSelectItem;
 import com.kaku.weac.common.WeacConstants;
 import com.kaku.weac.util.AudioPlayer;
 import com.kaku.weac.util.AudioRecorder;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.RingItemComparator;
 import com.kaku.weac.util.ToastUtil;
@@ -184,13 +184,13 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
 
     @Override
     public void onStart() {
-        LogUtil.i(LOG_TAG, "onStart()");
+        Log.i(LOG_TAG, "onStart()");
         super.onStart();
     }
 
     @Override
     public void onResume() {
-        LogUtil.i(LOG_TAG, "onResume()");
+        Log.i(LOG_TAG, "onResume()");
         super.onResume();
         // 当重新显示录音界面时刷新列表显示
         refreshList();
@@ -198,7 +198,7 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
 
     @Override
     public void onPause() {
-        LogUtil.i(LOG_TAG, "onPause()");
+        Log.i(LOG_TAG, "onPause()");
         // 停止录音
         recordStop();
         super.onPause();
@@ -206,13 +206,13 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
 
     @Override
     public void onStop() {
-        LogUtil.i(LOG_TAG, "onStop()");
+        Log.i(LOG_TAG, "onStop()");
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
-        LogUtil.i(LOG_TAG, "onDestroy()");
+        Log.i(LOG_TAG, "onDestroy()");
         super.onDestroy();
         if (mMicStatusHandler != null) {
             mMicStatusHandler.removeCallbacksAndMessages(null);
@@ -225,7 +225,7 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        LogUtil.i(LOG_TAG, "onCreateView()");
+        Log.i(LOG_TAG, "onCreateView()");
         View view = inflater.inflate(R.layout.fm_ring_recorder, container,
                 false);
 
@@ -357,7 +357,7 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
                         result = f.delete();
                     }
                     if (!result) {
-                        LogUtil.d(LOG_TAG, getString(R.string.error_delete_fail));
+                        Log.d(LOG_TAG, getString(R.string.error_delete_fail));
                     }
                     break;
                 }
@@ -574,7 +574,7 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
                         Thread.sleep(500);
                         mRecordBtn.setClickable(true);
                     } catch (Exception e) {
-                        LogUtil.e(LOG_TAG, "run方法出现错误：" + e.toString());
+                        Log.e(LOG_TAG, "run方法出现错误：" + e.toString());
                     }
 
                 }
@@ -639,7 +639,7 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
                         db = 0;
                     }
                     Thread.sleep(SPACE);
-                    // LogUtil.d(LOG_TAG, "分贝值：" + db);
+                    // Log.d(LOG_TAG, "分贝值：" + db);
 
                     if (db < 27) {
                         micStatus = 1;
@@ -663,7 +663,7 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
                     Message msg = mMicStatusHandler.obtainMessage(micStatus);
                     mMicStatusHandler.sendMessage(msg);
                 } catch (Exception e) {
-                    LogUtil.e(LOG_TAG, "run方法出现错误：" + e.toString());
+                    Log.e(LOG_TAG, "run方法出现错误：" + e.toString());
                 }
 
             }
@@ -690,7 +690,7 @@ public class RecorderFragment extends BaseFragment implements OnClickListener {
                     mRecordTimeHandler.sendMessage(msg);
                     time++;
                 } catch (Exception e) {
-                    LogUtil.e(LOG_TAG, "run方法出现错误：" + e.toString());
+                    Log.e(LOG_TAG, "run方法出现错误：" + e.toString());
                 }
             }
         }

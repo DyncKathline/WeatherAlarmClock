@@ -256,7 +256,7 @@ public class MyTimer extends View {
         canvas.drawText(mDisplayRemainTime, mCenterX - mRect.width() / 2,
                 mCenterY + mRect.height() / 2, mPaintRemainTime);
 
-//        LogUtil.d(LOG_TAG, "绘制中");
+//        Log.d(LOG_TAG, "绘制中");
     }
 
     /**
@@ -615,7 +615,7 @@ public class MyTimer extends View {
     //    private Handler mTimeHandler;
 
     public void updateDisplayTime() {
-//        LogUtil.d("MyTimer", "剩余时间：" + MyUtil.formatTime(mTimeRemain.get(Calendar.MINUTE),
+//        Log.d("MyTimer", "剩余时间：" + MyUtil.formatTime(mTimeRemain.get(Calendar.MINUTE),
 //                mTimeRemain.get(Calendar.SECOND)));
         // 时间不为0，继续倒计时
         if (!isTimeEmpty()) {

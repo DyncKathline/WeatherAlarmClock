@@ -22,6 +22,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,7 +44,6 @@ import com.kaku.weac.activities.NapEditActivity;
 import com.kaku.weac.activities.RingSelectActivity;
 import com.kaku.weac.bean.AlarmClock;
 import com.kaku.weac.common.WeacConstants;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 
 import java.util.Collection;
@@ -515,8 +515,8 @@ public class AlarmClockEditFragment extends BaseFragment implements
                 int napTimes = data.getIntExtra(WeacConstants.NAP_TIMES, 3);
                 mAlarmClock.setNapInterval(napInterval);
                 mAlarmClock.setNapTimes(napTimes);
-                LogUtil.i(LOG_TAG, "小睡间隔：" + napInterval);
-                LogUtil.i(LOG_TAG, "小睡次数：" + napTimes);
+                Log.i(LOG_TAG, "小睡间隔：" + napInterval);
+                Log.i(LOG_TAG, "小睡次数：" + napTimes);
                 break;
         }
     }

@@ -19,6 +19,7 @@ package com.kaku.weac.fragment;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,7 +30,6 @@ import android.widget.TextView;
 
 import com.kaku.weac.R;
 import com.kaku.weac.common.WeacConstants;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 
 import java.io.File;
@@ -98,7 +98,7 @@ public class RecordDetailFragment extends BaseFragment {
         } catch (IllegalArgumentException | SecurityException
                 | IllegalStateException | IOException e) {
             mPlayDuration = getString(R.string.unknown);
-            LogUtil.e(LOG_TAG, "error: " + e.toString());
+            Log.e(LOG_TAG, "error: " + e.toString());
         }
 
     }

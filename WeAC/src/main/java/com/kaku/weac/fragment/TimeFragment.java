@@ -30,6 +30,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +47,6 @@ import com.kaku.weac.bean.Event.TimerStartEvent;
 import com.kaku.weac.bean.model.TimeModel;
 import com.kaku.weac.common.WeacConstants;
 import com.kaku.weac.service.CountDownService;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.OttoAppConfig;
 import com.kaku.weac.view.MyTimer;
@@ -345,7 +345,7 @@ public class TimeFragment extends LazyLoadFragment implements View.OnClickListen
                 });
             }
         } catch (Exception e) {
-            LogUtil.e(LOG_TAG, "OnUpdateTime(): e.toString()");
+            Log.e(LOG_TAG, "OnUpdateTime(): e.toString()");
         }
     }
 
@@ -356,7 +356,7 @@ public class TimeFragment extends LazyLoadFragment implements View.OnClickListen
                 mIsBind = false;
             }
         } catch (Exception e) {
-            LogUtil.e(LOG_TAG, "stopCountDown(): " + e.toString());
+            Log.e(LOG_TAG, "stopCountDown(): " + e.toString());
         }
     }
 
@@ -376,14 +376,14 @@ public class TimeFragment extends LazyLoadFragment implements View.OnClickListen
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            LogUtil.d(LOG_TAG, ": onServiceConnected");
+            Log.d(LOG_TAG, ": onServiceConnected");
             CountDownService.TimerBinder binder = (CountDownService.TimerBinder) service;
             binder.setTimerUpdateListener(TimeFragment.this);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            LogUtil.d(LOG_TAG, ": onServiceDisconnected");
+            Log.d(LOG_TAG, ": onServiceDisconnected");
         }
     };
 
@@ -519,7 +519,7 @@ public class TimeFragment extends LazyLoadFragment implements View.OnClickListen
 
     @Override
     public void onTimerStart(long timeRemain) {
-        LogUtil.d(LOG_TAG, "onTimerStart 距离计时结束：" + timeRemain);
+        Log.d(LOG_TAG, "onTimerStart 距离计时结束：" + timeRemain);
         MyUtil.startAlarmTimer(getContext(), timeRemain);
     }
 
@@ -531,7 +531,7 @@ public class TimeFragment extends LazyLoadFragment implements View.OnClickListen
 
     @Override
     public void onMinChange(int minute) {
-        LogUtil.d(LOG_TAG, "minute change to " + minute);
+        Log.d(LOG_TAG, "minute change to " + minute);
 
         if (minute == 0) {
             setStartBtnNoClickable();
@@ -546,7 +546,7 @@ public class TimeFragment extends LazyLoadFragment implements View.OnClickListen
     @Override
     public void onResume() {
         super.onResume();
-        LogUtil.d(LOG_TAG, "onResume");
+        Log.d(LOG_TAG, "onResume");
         if (mTimer != null && mTimer.isStarted() ) {
             mTimer.setReset(false);
             setTimer();
@@ -557,7 +557,7 @@ public class TimeFragment extends LazyLoadFragment implements View.OnClickListen
     @Override
     public void onStop() {
         super.onStop();
-        LogUtil.d(LOG_TAG, "onStop");
+        Log.d(LOG_TAG, "onStop");
         stopCountDown();
     }
 

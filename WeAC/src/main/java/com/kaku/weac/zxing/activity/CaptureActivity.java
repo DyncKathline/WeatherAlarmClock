@@ -54,7 +54,6 @@ import com.kaku.weac.activities.MyDialogActivitySingle;
 import com.kaku.weac.bean.Event.ScanCodeEvent;
 import com.kaku.weac.common.WeacConstants;
 import com.kaku.weac.util.AudioPlayer;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.OttoAppConfig;
 import com.kaku.weac.zxing.camera.CameraManager;
@@ -263,7 +262,7 @@ public final class CaptureActivity extends BaseActivity implements SurfaceHolder
                     intent.setData(uri);
                     myFinish(intent);
                 } catch (Exception e) {
-                    LogUtil.e(LOG_TAG, "handleDecode: " + e.toString());
+                    Log.e(LOG_TAG, "handleDecode: " + e.toString());
                     displayResult(scanResult, 0);
                 }
             } else {

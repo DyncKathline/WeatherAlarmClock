@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,6 @@ import com.kaku.weac.adapter.ThemeAdapter;
 import com.kaku.weac.bean.Event.WallpaperEvent;
 import com.kaku.weac.bean.Theme;
 import com.kaku.weac.common.WeacConstants;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.OttoAppConfig;
 import com.squareup.otto.Subscribe;
@@ -178,7 +178,7 @@ public class ThemeFragment extends BaseFragment implements View.OnClickListener 
                     theme.setResId(field.getInt(R.drawable.class));
                     this.mList.add(theme);
                 } catch (IllegalAccessException | IllegalArgumentException e) {
-                    LogUtil.e(LOG_TAG, "initAdapter(): " + e.toString());
+                    Log.e(LOG_TAG, "initAdapter(): " + e.toString());
                 }
             }
         }

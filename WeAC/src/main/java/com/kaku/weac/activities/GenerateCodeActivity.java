@@ -29,6 +29,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,6 @@ import com.afollestad.materialdialogs.color.ColorChooserDialog;
 import com.kaku.weac.R;
 import com.kaku.weac.bean.Event.QRcodeLogoEvent;
 import com.kaku.weac.common.WeacConstants;
-import com.kaku.weac.util.LogUtil;
 import com.kaku.weac.util.MyUtil;
 import com.kaku.weac.util.OttoAppConfig;
 import com.kaku.weac.util.ToastUtil;
@@ -227,7 +227,7 @@ public class GenerateCodeActivity extends BaseActivity implements View.OnClickLi
                                 } catch (Exception e) {
                                     ToastUtil.showShortToast(GenerateCodeActivity.this,
                                             getString(R.string.save_fail_retry));
-                                    LogUtil.e(LOG_TAG, e.toString());
+                                    Log.e(LOG_TAG, e.toString());
                                 }
                             } else {
                                 ToastUtil.showShortToast(GenerateCodeActivity.this,
@@ -336,7 +336,7 @@ public class GenerateCodeActivity extends BaseActivity implements View.OnClickLi
 
     @Override
     public void onColorSelection(@NonNull ColorChooserDialog dialog, int selectedColor) {
-        LogUtil.d(LOG_TAG, "onColorSelection: " + selectedColor);
+        Log.d(LOG_TAG, "onColorSelection: " + selectedColor);
         switch (mPalette) {
             // 前景色
             case 0:
