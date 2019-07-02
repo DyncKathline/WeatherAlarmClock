@@ -439,7 +439,9 @@ public class AlarmClockNewFragment extends BaseFragment implements OnClickListen
                 saveDefaultAlarmTime();
 
                 Intent data = new Intent();
-                data.putExtra(WeacConstants.ALARM_CLOCK, mAlarmClock);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(WeacConstants.ALARM_CLOCK, mAlarmClock);
+                data.putExtra(WeacConstants.ALARM_CLOCK_BUNDLE, bundle);
                 getActivity().setResult(Activity.RESULT_OK, data);
                 drawAnimation();
                 break;

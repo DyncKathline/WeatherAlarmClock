@@ -203,8 +203,8 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
                         | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        mAlarmClock = getActivity().getIntent()
-                .getParcelableExtra(WeacConstants.ALARM_CLOCK);
+        mAlarmClock = getActivity().getIntent().getBundleExtra(WeacConstants.ALARM_CLOCK_BUNDLE)
+                .getParcelable(WeacConstants.ALARM_CLOCK);
         if (mAlarmClock != null) {
             // 取得小睡间隔
             mNapInterval = mAlarmClock.getNapInterval();
@@ -579,10 +579,12 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
 
         // 设置小睡相关信息
         Intent intent = new Intent(getActivity(), AlarmClockBroadcast.class);
-        intent.putExtra(WeacConstants.ALARM_CLOCK, mAlarmClock);
-        intent.putExtra(WeacConstants.NAP_RAN_TIMES, mNapTimesRan);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(WeacConstants.ALARM_CLOCK, mAlarmClock);
+        bundle.putInt(WeacConstants.NAP_RAN_TIMES, mNapTimesRan);
+        intent.putExtra(WeacConstants.ALARM_CLOCK_BUNDLE, bundle);
         PendingIntent pi = PendingIntent.getBroadcast(getActivity(),
-                -mAlarmClock.getId(), intent,
+                mAlarmClock.getId(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) getActivity()
                 .getSystemService(Activity.ALARM_SERVICE);
@@ -602,7 +604,9 @@ public class AlarmClockOntimeFragment extends BaseFragment implements
         // 设置通知相关信息
         Intent it = new Intent(getActivity(),
                 AlarmClockNapNotificationActivity.class);
-        it.putExtra(WeacConstants.ALARM_CLOCK, mAlarmClock);
+        Bundle bd = new Bundle();
+        bd.putParcelable(WeacConstants.ALARM_CLOCK, mAlarmClock);
+        it.putExtra(WeacConstants.ALARM_CLOCK_BUNDLE, bd);
         // FLAG_UPDATE_CURRENT 点击通知有时不会跳转！！
         // FLAG_ONE_SHOT 清除列表只响应一个
         PendingIntent napCancel = PendingIntent.getActivity(getActivity(),

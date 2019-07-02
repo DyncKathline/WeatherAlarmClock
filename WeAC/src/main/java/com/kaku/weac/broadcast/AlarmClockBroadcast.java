@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -54,9 +55,13 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        AlarmClock alarmClock = intent
-                .getParcelableExtra(WeacConstants.ALARM_CLOCK);
+        Log.e(LOG_TAG, "onReceive");
+        Bundle bundle = intent.getBundleExtra(WeacConstants.ALARM_CLOCK_BUNDLE);
+        AlarmClock alarmClock = bundle
+                .getParcelable(WeacConstants.ALARM_CLOCK);
+        Log.e(LOG_TAG, "onReceive->" + alarmClock);
         if (alarmClock != null) {
+            Log.e(LOG_TAG, "onReceive->" + alarmClock.getId());
             // 单次响铃
             if (alarmClock.getWeeks() == null) {
                 AlarmClockOperate.getInstance().updateAlarmClock(false,
@@ -71,7 +76,8 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
         }
 
         // 小睡已执行次数
-        int napTimesRan = intent.getIntExtra(WeacConstants.NAP_RAN_TIMES, 0);
+//        int napTimesRan = intent.getIntExtra(WeacConstants.NAP_RAN_TIMES, 0);
+        int napTimesRan = bundle.getInt(WeacConstants.NAP_RAN_TIMES, 0);
         // 当前时间
         long now = SystemClock.elapsedRealtime();
         // 当上一次闹钟响起时间等于0
@@ -96,15 +102,17 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
             WeacStatus.sLastStartTime = now;
         }
 
-        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            intentNotification(context, alarmClock, napTimesRan);
-        }else {
-            intentActivity(context, alarmClock, napTimesRan);
-        }
+        intentActivity(context, alarmClock, napTimesRan);
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//            intentNotification(context, alarmClock, napTimesRan);
+//        } else {
+//            intentActivity(context, alarmClock, napTimesRan);
+//        }
     }
 
     private void intentActivity(Context context, AlarmClock alarmClock, int napTimesRan) {
         Intent it = new Intent(context, AlarmClockOntimeActivity.class);
+        Bundle bundle = new Bundle();
 
         // 新闹钟任务
         if (napTimesRan == 0) {
@@ -115,9 +123,10 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
             // 设置响起级别为小睡
             WeacStatus.sStrikerLevel = 2;
             // 小睡已执行次数
-            it.putExtra(WeacConstants.NAP_RAN_TIMES, napTimesRan);
+            bundle.putInt(WeacConstants.NAP_RAN_TIMES, napTimesRan);
         }
-        it.putExtra(WeacConstants.ALARM_CLOCK, alarmClock);
+        bundle.putParcelable(WeacConstants.ALARM_CLOCK, alarmClock);
+        it.putExtra(WeacConstants.ALARM_CLOCK_BUNDLE, bundle);
         // 清除栈顶的Activity
         it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -127,11 +136,23 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
     private void intentNotification(Context context, AlarmClock alarmClock, int napTimesRan) {
         Log.e(LOG_TAG, "intentNotification");
         Intent fullScreenIntent = new Intent(context, AlarmClockOntimeActivity.class);
-//        fullScreenIntent.putExtra(WeacConstants.ALARM_CLOCK, alarmClock);
+        Bundle bundle = new Bundle();
+
+        // 新闹钟任务
+        if (napTimesRan == 0) {
+            // 设置响起级别为闹钟
+            WeacStatus.sStrikerLevel = 1;
+            // 小睡任务
+        } else {
+            // 设置响起级别为小睡
+            WeacStatus.sStrikerLevel = 2;
+            // 小睡已执行次数
+            bundle.putInt(WeacConstants.NAP_RAN_TIMES, napTimesRan);
+        }
+        bundle.putParcelable(WeacConstants.ALARM_CLOCK, alarmClock);
+        fullScreenIntent.putExtra(WeacConstants.ALARM_CLOCK_BUNDLE, bundle);
         PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(context, 0,
                 fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        int NOTIFICATION_ID = 234;
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification.Builder builder = new Notification.Builder(context);
@@ -161,9 +182,9 @@ public class AlarmClockBroadcast extends BroadcastReceiver {
                 .setFullScreenIntent(fullScreenPendingIntent, true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            notificationManager.notify(NOTIFICATION_ID, builder.build());
-        }else {
-            notificationManager.notify(NOTIFICATION_ID, builder.getNotification());
+            notificationManager.notify(alarmClock.getId(), builder.build());
+        } else {
+            notificationManager.notify(alarmClock.getId(), builder.getNotification());
         }
     }
 }

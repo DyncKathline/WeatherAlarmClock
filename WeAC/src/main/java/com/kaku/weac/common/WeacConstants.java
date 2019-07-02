@@ -68,6 +68,7 @@ public class WeacConstants {
      * 保存的AlarmClock单例
      */
     public static final String ALARM_CLOCK = "alarm_clock";
+    public static final String ALARM_CLOCK_BUNDLE = "alarm_clock_bundle";
 
     /**
      * 铃声地址

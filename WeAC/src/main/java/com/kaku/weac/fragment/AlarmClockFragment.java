@@ -173,7 +173,9 @@ public class AlarmClockFragment extends BaseFragment implements OnClickListener 
             AlarmClock alarmClock = mAlarmClockList.get(position);
             Intent intent = new Intent(getActivity(),
                     AlarmClockEditActivity.class);
-            intent.putExtra(WeacConstants.ALARM_CLOCK, alarmClock);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(WeacConstants.ALARM_CLOCK, alarmClock);
+            intent.putExtra(WeacConstants.ALARM_CLOCK_BUNDLE, bundle);
             // 开启编辑闹钟界面
             startActivityForResult(intent, REQUEST_ALARM_CLOCK_EDIT);
             // 启动移动进入效果动画
@@ -285,8 +287,8 @@ public class AlarmClockFragment extends BaseFragment implements OnClickListener 
         if (resultCode != Activity.RESULT_OK) {
             return;
         }
-        AlarmClock ac = data
-                .getParcelableExtra(WeacConstants.ALARM_CLOCK);
+        AlarmClock ac = data.getBundleExtra(WeacConstants.ALARM_CLOCK_BUNDLE)
+                .getParcelable(WeacConstants.ALARM_CLOCK);
         switch (requestCode) {
             // 新建闹钟
             case REQUEST_ALARM_CLOCK_NEW:
